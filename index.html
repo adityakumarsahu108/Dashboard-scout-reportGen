@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Scout Security Report Dashboard
+    </title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+</head>
+
+
+<body>
+
+    <!-- =========================================
+         APP
+    ========================================== -->
+
+    <div class="app">
+
+
+        <!-- =====================================
+             SIDEBAR
+        ====================================== -->
+
+        <aside class="sidebar">
+
+            <div class="brand">
+
+                <div class="brand-mark">
+                    SR
+                </div>
+
+                <div class="brand-text">
+
+                    <strong>
+                        Scout
+                    </strong>
+
+                    <span>
+                        Security Reports
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <nav class="navigation">
+
+                <button class="nav-item active" data-page="dashboard">
+
+                    <span class="nav-icon">
+                        ◈
+                    </span>
+
+                    <span>
+                        Dashboard
+                    </span>
+
+                </button>
+
+
+                <button class="nav-item" data-page="reports">
+
+                    <span class="nav-icon">
+                        ▤
+                    </span>
+
+                    <span>
+                        Reports
+                    </span>
+
+                </button>
+
+
+                <button class="nav-item" data-page="analytics">
+
+                    <span class="nav-icon">
+                        ◫
+                    </span>
+
+                    <span>
+                        Analytics
+                    </span>
+
+                </button>
+
+            </nav>
+
+
+            <div class="sidebar-footer">
+
+                <span>
+                    Daily Report Generator
+                </span>
+
+                <small>
+                    v1.0
+                </small>
+
+            </div>
+
+        </aside>
+
+
+
+        <!-- =====================================
+             MAIN
+        ====================================== -->
+
+        <main class="main">
+
+
+            <!-- =================================
+                 TOP BAR
+            ================================== -->
+
+            <header class="topbar">
+
+                <div>
+
+                    <h1 id="page-title">
+                        Security Dashboard
+                    </h1>
+
+                    <p id="page-description">
+                        Overview of security alerts and reports
+                    </p>
+
+                </div>
+
+
+                <div class="topbar-actions">
+
+                    <button class="refresh-button" id="refresh-button" type="button">
+
+                        ↻
+
+                        <span>
+                            Refresh
+                        </span>
+
+                    </button>
+
+                </div>
+
+            </header>
+
+
+
+            <!-- =================================
+                 PAGE CONTENT
+            ================================== -->
+
+            <section class="page-content" id="page-content">
+
+
+                <!-- =================================
+                     DASHBOARD PAGE
+                ================================== -->
+
+                <div class="page" id="dashboard-page">
+
+
+                    <!-- DATE / STATUS -->
+
+                    <div class="dashboard-header">
+
+                        <div>
+
+                            <span class="section-label">
+                                OVERVIEW
+                            </span>
+
+                            <h2>
+                                Security posture
+                            </h2>
+
+                        </div>
+
+
+                        <div class="last-updated" id="last-updated">
+                            Loading...
+                        </div>
+
+                    </div>
+
+
+
+                    <!-- =================================
+                         KPI CARDS
+                    ================================== -->
+
+                    <div class="stats-grid">
+
+
+                        <div class="stat-card">
+
+                            <div class="stat-card-top">
+
+                                <span>
+                                    Total Alerts
+                                </span>
+
+                                <div class="stat-icon">
+                                    ◉
+                                </div>
+
+                            </div>
+
+                            <strong id="total-alerts">
+                                —
+                            </strong>
+
+                            <small>
+                                Across all sources
+                            </small>
+
+                        </div>
+
+
+
+                        <div class="stat-card">
+
+                            <div class="stat-card-top">
+
+                                <span>
+                                    Cyera
+                                </span>
+
+                                <div class="stat-icon">
+                                    C
+                                </div>
+
+                            </div>
+
+                            <strong id="cyera-alerts">
+                                —
+                            </strong>
+
+                            <small>
+                                Data security alerts
+                            </small>
+
+                        </div>
+
+
+
+                        <div class="stat-card">
+
+                            <div class="stat-card-top">
+
+                                <span>
+                                    Purview
+                                </span>
+
+                                <div class="stat-icon">
+                                    P
+                                </div>
+
+                            </div>
+
+                            <strong id="purview-alerts">
+                                —
+                            </strong>
+
+                            <small>
+                                DLP alerts
+                            </small>
+
+                        </div>
+
+
+
+                        <div class="stat-card">
+
+                            <div class="stat-card-top">
+
+                                <span>
+                                    Reports
+                                </span>
+
+                                <div class="stat-icon">
+                                    R
+                                </div>
+
+                            </div>
+
+                            <strong id="total-reports">
+                                —
+                            </strong>
+
+                            <small>
+                                Generated reports
+                            </small>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================
+     ALERT TRENDS
+================================== -->
+
+                    <section class="panel trends-panel">
+
+                        <div class="panel-header">
+
+                            <div>
+                                <span class="section-label">
+                                    ALERT TRENDS
+                                </span>
+
+                                <h3>
+                                    Security activity over time
+                                </h3>
+                            </div>
+
+                            <div class="trend-controls">
+
+                                <button type="button" class="trend-period active" data-period="daily">
+                                    Daily
+                                </button>
+
+                                <button type="button" class="trend-period" data-period="monthly">
+                                    Monthly
+                                </button>
+
+                                <button type="button" class="trend-period" data-period="quarterly">
+                                    Quarterly
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="trend-legend">
+
+                            <span>
+                                <i class="trend-dot total"></i>
+                                Total
+                            </span>
+
+                            <span>
+                                <i class="trend-dot cyera"></i>
+                                Cyera
+                            </span>
+
+                            <span>
+                                <i class="trend-dot purview"></i>
+                                Purview
+                            </span>
+
+                        </div>
+
+
+                        <div class="trend-chart" id="trend-chart">
+                            <div class="loading-state">
+                                Loading trends...
+                            </div>
+                        </div>
+
+                    </section>
+                    <!-- =================================
+                         MAIN DASHBOARD GRID
+                    ================================== -->
+
+                    <div class="dashboard-grid">
+
+
+                        <!-- ALERT BREAKDOWN -->
+
+                        <section class="panel">
+
+                            <div class="panel-header">
+
+                                <div>
+
+                                    <span class="section-label">
+                                        ALERT DISTRIBUTION
+                                    </span>
+
+                                    <h3>
+                                        Severity breakdown
+                                    </h3>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="severity-container" id="severity-container">
+
+                                <div class="loading-state">
+                                    Loading...
+                                </div>
+
+                            </div>
+
+                        </section>
+
+
+
+                        <!-- LATEST REPORT -->
+
+                        <section class="panel">
+
+                            <div class="panel-header">
+
+                                <div>
+
+                                    <span class="section-label">
+                                        LATEST
+                                    </span>
+
+                                    <h3>
+                                        Latest report
+                                    </h3>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="latest-report" id="latest-report">
+
+                                <div class="loading-state">
+                                    Loading...
+                                </div>
+
+                            </div>
+
+                        </section>
+
+                    </div>
+
+                    <br>
+                    <!-- =================================
+     RISK & ANALYST INSIGHTS
+================================== -->
+
+                    <section class="panel insights-panel">
+
+                        <div class="panel-header">
+
+                            <div>
+                                <span class="section-label">
+                                    RISK & ANALYST INSIGHTS
+                                </span>
+
+                                <h3>
+                                    What needs attention
+                                </h3>
+                            </div>
+
+                        </div>
+
+
+                        <!-- RISK SUMMARY -->
+
+                        <div class="insight-risk-grid" id="insight-risk-grid">
+
+                            <div class="insight-risk-card critical">
+
+                                <span class="insight-label">
+                                    Critical
+                                </span>
+
+                                <strong id="insight-critical">
+                                    —
+                                </strong>
+
+                                <span class="insight-description">
+                                    Immediate attention
+                                </span>
+
+                            </div>
+
+
+                            <div class="insight-risk-card high">
+
+                                <span class="insight-label">
+                                    High
+                                </span>
+
+                                <strong id="insight-high">
+                                    —
+                                </strong>
+
+                                <span class="insight-description">
+                                    High-risk alerts
+                                </span>
+
+                            </div>
+
+
+                            <div class="insight-risk-card open">
+
+                                <span class="insight-label">
+                                    Open
+                                </span>
+
+                                <strong id="insight-open">
+                                    —
+                                </strong>
+
+                                <span class="insight-description">
+                                    Awaiting resolution
+                                </span>
+
+                            </div>
+
+
+                            <div class="insight-risk-card accepted">
+
+                                <span class="insight-label">
+                                    Risk Accepted
+                                </span>
+
+                                <strong id="insight-risk-accepted">
+                                    —
+                                </strong>
+
+                                <span class="insight-description">
+                                    Accepted risk
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- INSIGHT COLUMNS -->
+
+                        <div class="insights-columns">
+
+
+                            <!-- TOP USERS -->
+
+                            <div class="insight-block">
+
+                                <div class="insight-block-header">
+
+                                    <div>
+                                        <span class="section-label">
+                                            ANALYST WORKLOAD
+                                        </span>
+
+                                        <h4>
+                                            Top Assigned Analysts
+                                        </h4>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="insight-list" id="top-users">
+
+                                    <div class="loading-state">
+                                        Loading...
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- TOP POLICIES -->
+
+                            <div class="insight-block">
+
+                                <div class="insight-block-header">
+
+                                    <div>
+                                        <span class="section-label">
+                                            TOP POLICIES
+                                        </span>
+
+                                        <h4>
+                                            Most triggered policies
+                                        </h4>
+                                    </div>
+
+                                </div>
+
+
+                                <div class="insight-list" id="top-policies">
+
+                                    <div class="loading-state">
+                                        Loading...
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- ATTENTION REQUIRED -->
+
+                        <div class="attention-section">
+
+                            <div class="insight-block-header">
+
+                                <div>
+                                    <span class="section-label">
+                                        ATTENTION REQUIRED
+                                    </span>
+
+                                    <h4>
+                                        Analyst priorities
+                                    </h4>
+                                </div>
+
+                            </div>
+
+
+                            <div class="attention-list" id="attention-required">
+
+                                <div class="loading-state">
+                                    Loading insights...
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+                    <br>
+                    <!-- =================================
+     SOURCE COMPARISON
+================================== -->
+
+                    <section class="panel source-comparison-panel">
+
+                        <div class="panel-header">
+
+                            <div>
+                                <span class="section-label">
+                                    SOURCE ANALYSIS
+                                </span>
+
+                                <h3>
+                                    Cyera vs Purview
+                                </h3>
+                            </div>
+
+                        </div>
+
+
+                        <div class="source-comparison" id="source-comparison">
+
+                            <div class="loading-state">
+                                Loading source analysis...
+                            </div>
+
+                        </div>
+
+                    </section>
+                    <br>
+
+                    <!-- =================================
+                         RECENT REPORTS
+                    ================================== -->
+
+                    <section class="panel reports-panel">
+
+                        <div class="panel-header">
+
+                            <div>
+
+                                <span class="section-label">
+                                    REPORT HISTORY
+                                </span>
+
+                                <h3>
+                                    Recent reports
+                                </h3>
+
+                            </div>
+
+
+                            <button class="text-button" id="view-all-reports" type="button">
+                                View all →
+                            </button>
+
+                        </div>
+
+
+                        <div class="table-wrapper">
+
+                            <table>
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            Report
+                                        </th>
+
+                                        <th>
+                                            Date
+                                        </th>
+
+                                        <th>
+                                            Cyera
+                                        </th>
+
+                                        <th>
+                                            Purview
+                                        </th>
+
+                                        <th>
+                                            Total
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody id="recent-reports">
+
+                                    <tr>
+
+                                        <td colspan="5" class="loading-state">
+                                            Loading reports...
+                                        </td>
+
+                                    </tr>
+
+                                </tbody>
+
+                            </table>
+                            <div class="reports-pagination" id="reports-pagination">
+
+                                <button type="button" class="pagination-button" id="reports-prev" disabled>
+                                    ← Previous
+                                </button>
+
+                                <span class="pagination-info" id="reports-page-info">
+                                    Page 1
+                                </span>
+
+                                <button type="button" class="pagination-button" id="reports-next" disabled>
+                                    Next →
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                </div>
+
+
+
+                <!-- =================================
+                     REPORTS PAGE
+                ================================== -->
+
+                <div class="page hidden" id="reports-page">
+
+                    <div class="page-placeholder">
+
+                        <h2>
+                            Reports
+                        </h2>
+
+                        <p>
+                            Report history and pagination will be added next.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <br>
+                <!-- =================================
+     REPORT EXPLORER
+================================== -->
+
+                <section class="panel report-explorer-panel" id="report-explorer">
+
+                    <div class="panel-header">
+
+                        <div>
+                            <span class="section-label">
+                                REPORT EXPLORER
+                            </span>
+
+                            <h3>
+                                Alert details
+                            </h3>
+                        </div>
+
+                        <div class="explorer-source-toggle">
+
+                            <button type="button" class="explorer-source active" data-source="cyera">
+                                Cyera
+                            </button>
+
+                            <button type="button" class="explorer-source" data-source="purview">
+                                Purview
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Report context -->
+
+                    <div class="explorer-context">
+
+                        <div>
+
+                            <span class="context-label">
+                                Report
+                            </span>
+
+                            <strong id="explorer-report-id">
+                                —
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            <span class="context-label">
+                                Date
+                            </span>
+
+                            <strong id="explorer-report-date">
+                                —
+                            </strong>
+
+                        </div>
+
+                        <div>
+
+                            <span class="context-label">
+                                Source
+                            </span>
+
+                            <strong id="explorer-source-name">
+                                Cyera
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Filters -->
+
+                    <div class="explorer-filters">
+
+                        <div class="filter-group">
+
+                            <label for="alert-search">
+                                Search
+                            </label>
+
+                            <input type="text" id="alert-search" placeholder="Search alerts...">
+
+                        </div>
+
+
+                        <div class="filter-group">
+
+                            <label for="alert-severity">
+                                Severity
+                            </label>
+
+                            <select id="alert-severity">
+
+                                <option value="">
+                                    All severities
+                                </option>
+
+                                <option value="Critical">
+                                    Critical
+                                </option>
+
+                                <option value="High">
+                                    High
+                                </option>
+
+                                <option value="Medium">
+                                    Medium
+                                </option>
+
+                                <option value="Low">
+                                    Low
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="filter-group">
+
+                            <label for="alert-status">
+                                Status
+                            </label>
+
+                            <select id="alert-status">
+
+                                <option value="">
+                                    All statuses
+                                </option>
+
+                                <option value="Open">
+                                    Open
+                                </option>
+
+                                <option value="Resolved">
+                                    Resolved
+                                </option>
+
+                                <option value="Risk Accepted">
+                                    Risk Accepted
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="filter-group">
+
+                            <label for="alert-assigned-user">
+                                Assigned User
+                            </label>
+
+                            <input type="text" id="alert-assigned-user" placeholder="User email...">
+
+                        </div>
+
+
+                        <button type="button" class="filter-reset" id="alert-filter-reset">
+                            Reset
+                        </button>
+
+                    </div>
+
+
+                    <!-- Alert table -->
+
+                    <div class="explorer-table-wrapper">
+
+                        <table class="alert-table">
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Alert
+                                    </th>
+
+                                    <th>
+                                        Severity
+                                    </th>
+
+                                    <th>
+                                        Status
+                                    </th>
+
+                                    <th>
+                                        Assigned User
+                                    </th>
+
+                                    <th>
+                                        Timestamp
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="report-alerts">
+
+                                <tr>
+
+                                    <td colspan="5" class="loading-state">
+                                        Select a report to view alerts.
+                                    </td>
+
+                                </tr>
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+
+                    <!-- Pagination -->
+
+                    <div class="explorer-pagination">
+
+                        <button type="button" id="alerts-prev">
+                            ← Previous
+                        </button>
+
+                        <span id="alerts-page">
+                            Page 1
+                        </span>
+
+                        <button type="button" id="alerts-next">
+                            Next →
+                        </button>
+
+                    </div>
+
+                </section>
+
+                <br>
+                <!-- =================================
+     ALERT DETAIL MODAL
+================================== -->
+
+                <div id="alert-detail-modal" class="alert-detail-modal" aria-hidden="true">
+
+                    <div class="alert-detail-overlay"></div>
+
+                    <div class="alert-detail-dialog" role="dialog" aria-modal="true"
+                        aria-labelledby="alert-detail-title">
+
+                        <div class="alert-detail-header">
+
+                            <div>
+
+                                <span class="section-label">
+                                    ALERT DETAILS
+                                </span>
+
+                                <h3 id="alert-detail-title">
+                                    Alert details
+                                </h3>
+
+                            </div>
+
+                            <button type="button" class="alert-detail-close" id="alert-detail-close" aria-label="Close">
+                                ×
+                            </button>
+
+                        </div>
+
+
+                        <div id="alert-detail-content" class="alert-detail-content">
+
+                            <div class="loading-state">
+                                Loading alert...
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+                <br>
+
+                <!-- =================================
+                     ANALYTICS PAGE
+                ================================== -->
+
+                <div class="page hidden" id="analytics-page">
+
+                    <div class="page-placeholder">
+
+                        <h2>
+                            Analytics
+                        </h2>
+
+                        <p>
+                            Daily, monthly and quarterly analytics will be added next.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+
+    <!-- =========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script src="js/api.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script src="js/dashboard.js"></script>
+
+    <script src="js/reports.js"></script>
+
+    <script src="js/report-details.js"></script>
+
+    <script src="js/app.js"></script>
+
+</body>
+
+</html>
