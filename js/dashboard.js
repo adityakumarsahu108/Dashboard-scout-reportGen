@@ -4913,9 +4913,7 @@ function renderTopPolicies(policies) {
 
             <div class="insight-unavailable">
 
-                <span class="insight-unavailable-icon">
-                    —
-                </span>
+                <span class="insight-unavailable-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.6 8.7 8 10 4.4-1.3 8-5 8-10V6l-8-3Z"/><path d="M9.5 12l1.8 1.8L15 10"/></svg></span>
 
                 <div>
 
