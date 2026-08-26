@@ -158,7 +158,7 @@
                  TOP BAR
             ================================== -->
 
-            <header class="topbar">
+            <header class="topbar" id="topbar">
 
                 <div>
 
@@ -1198,14 +1198,14 @@
         /* Intelligence page fills the existing main content area. */
         #intelligence-page {
             width: 100%;
-            min-height: calc(100vh - 120px);
+            min-height: 100vh;
             padding: 0;
         }
 
         #intelligence-page #intelligence-frame {
             display: block;
             width: 100%;
-            height: calc(100vh - 120px);
+            height: 100vh;
             min-height: 700px;
             border: 0;
             border-radius: 0;
@@ -1239,6 +1239,8 @@
             function showDashboard() {
                 hideAllPages();
 
+                document.getElementById("topbar").style.display = "";
+
                 if (pages.dashboard) {
                     pages.dashboard.classList.remove("hidden");
                 }
@@ -1265,6 +1267,8 @@
             function showReports() {
                 hideAllPages();
 
+                document.getElementById("topbar").style.display = "";
+
                 if (pages.reports) {
                     pages.reports.classList.remove("hidden");
                 }
@@ -1287,6 +1291,8 @@
             function showAnalytics() {
                 hideAllPages();
 
+                document.getElementById("topbar").style.display = "";
+
                 if (pages.analytics) {
                     pages.analytics.classList.remove("hidden");
                 }
@@ -1308,6 +1314,8 @@
 
             function showIntelligence() {
                 hideAllPages();
+
+                document.getElementById("topbar").style.display = "none";
 
                 if (pages.intelligence) {
                     pages.intelligence.classList.remove("hidden");
