@@ -95,19 +95,6 @@
 
                 </button>
 
-
-                <button class="nav-item" data-page="intelligence">
-
-                    <span class="nav-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M21 12h-3M6 12H3M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1M18.4 18.4l-2.1-2.1M7.7 7.7 5.6 5.6"/></svg>
-                    </span>
-
-                    <span>
-                        Intelligence
-                    </span>
-
-                </button>
-
             </nav>
 
 
@@ -1113,221 +1100,11 @@
 
                 </div>
 
-                <!-- =================================
-                     INTELLIGENCE PAGE
-                ================================== -->
-
-                <div class="page hidden" id="intelligence-page">
-
-                    <div class="dashboard-header">
-
-                        <div>
-                            <span class="section-label">
-                                SECURITY INTELLIGENCE
-                            </span>
-
-                            <h2>
-                                Intelligence Report
-                            </h2>
-                        </div>
-
-                        <div class="last-updated">
-                            <span id="intel-generated-at" class="intel-updated">
-                                —
-                            </span>
-                            <button type="button" class="text-button" id="intel-refresh" style="margin-left:4px;">
-                                Refresh
-                            </button>
-                        </div>
-
-                    </div>
-
-                    <!-- Summary stats -->
-
-                    <div class="stats-grid" id="intel-stats-grid">
-
-                        <div class="stat-card">
-                            <div class="stat-card-top">
-                                <span>Total Alerts</span>
-                                <div class="stat-icon">
-                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V6l-9-4Z"/></svg>
-                                </div>
-                            </div>
-                            <strong id="intel-total">—</strong>
-                            <small>Across Cyera &amp; Purview</small>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-card-top">
-                                <span>New This Report</span>
-                                <div class="stat-icon">
-                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
-                                </div>
-                            </div>
-                            <strong id="intel-new">—</strong>
-                            <small id="intel-new-pct">—% of current volume</small>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-card-top">
-                                <span>Carried Over</span>
-                                <div class="stat-icon">
-                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15.4-6.4L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15.4 6.4L3 16"/><path d="M3 21v-5h5"/></svg>
-                                </div>
-                            </div>
-                            <strong id="intel-carried-over">—</strong>
-                            <small id="intel-carried-pct">—% of current volume</small>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-card-top">
-                                <span>Unassigned</span>
-                                <div class="stat-icon">
-                                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5 20c0-4 3-6.5 7-6.5S19 16 19 20"/></svg>
-                                </div>
-                            </div>
-                            <strong id="intel-unassigned">—</strong>
-                            <small>Awaiting analyst assignment</small>
-                        </div>
-
-                    </div>
-
-                    <!-- Report comparison -->
-
-                    <section class="panel" id="intel-comparison-panel">
-
-                        <div class="panel-header">
-                            <div>
-                                <span class="section-label">VS PREVIOUS REPORT</span>
-                                <h3>Report Comparison</h3>
-                            </div>
-                        </div>
-
-                        <div class="intel-comparison-grid" id="intel-comparison-grid">
-                            <div class="loading-state">Loading comparison…</div>
-                        </div>
-
-                    </section>
-
-                    <!-- Key findings -->
-
-                    <section class="panel" id="intel-findings-panel">
-
-                        <div class="panel-header">
-                            <div>
-                                <span class="section-label">DETERMINISTIC ANALYSIS</span>
-                                <h3>Key Findings</h3>
-                            </div>
-                        </div>
-
-                        <div class="findings-list" id="intel-findings-list">
-                            <div class="loading-state">Loading findings…</div>
-                        </div>
-
-                    </section>
-
-                    <!-- Lifecycle + Aging -->
-
-                    <div class="dashboard-grid">
-
-                        <section class="panel" id="intel-lifecycle-panel">
-
-                            <div class="panel-header">
-                                <div>
-                                    <span class="section-label">ALERT LIFECYCLE</span>
-                                    <h3>New vs. Carried Over</h3>
-                                </div>
-                            </div>
-
-                            <div class="lifecycle-summary" id="intel-lifecycle-summary">
-                                <div class="loading-state">Loading lifecycle…</div>
-                            </div>
-
-                        </section>
-
-                        <section class="panel" id="intel-aging-panel">
-
-                            <div class="panel-header">
-                                <div>
-                                    <span class="section-label">PERSISTENCE</span>
-                                    <h3>Longest-Running Alerts</h3>
-                                </div>
-                            </div>
-
-                            <div class="aging-stats-row" id="intel-aging-stats">
-                                <div class="loading-state">Loading…</div>
-                            </div>
-
-                            <div class="insight-list" id="intel-aging-list"></div>
-
-                        </section>
-
-                    </div>
-
-                    <!-- Prioritized alerts -->
-
-                    <section class="panel" id="intel-priority-panel">
-
-                        <div class="panel-header">
-                            <div>
-                                <span class="section-label">RANKED BY RISK SCORE</span>
-                                <h3>Prioritized Alerts</h3>
-                            </div>
-                        </div>
-
-                        <div class="table-wrapper">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Alert</th>
-                                        <th>Priority</th>
-                                        <th>Score</th>
-                                        <th>Assigned</th>
-                                        <th>Why it's ranked here</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="intel-priority-table">
-                                    <tr><td colspan="5" class="loading-state">Loading prioritized alerts…</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                    </section>
-
-                    <!-- Distributions -->
-
-                    <div class="insights-columns">
-
-                        <section class="insight-block" id="intel-channel-block">
-                            <div class="insight-block-header">
-                                <div>
-                                    <span class="section-label">BY CHANNEL</span>
-                                    <h4>Alert Sources</h4>
-                                </div>
-                            </div>
-                            <div id="intel-channel-dist"><div class="loading-state">Loading…</div></div>
-                        </section>
-
-                        <section class="insight-block" id="intel-policy-block">
-                            <div class="insight-block-header">
-                                <div>
-                                    <span class="section-label">TOP POLICIES</span>
-                                    <h4>Policy Concentration</h4>
-                                </div>
-                            </div>
-                            <div id="intel-policy-dist"><div class="loading-state">Loading…</div></div>
-                        </section>
-
-                    </div>
-
-                </div>
-
             </section>
 
-            </main>
+        </main>
 
-        </div>
-
+    </div>
 
 
 
@@ -1346,8 +1123,6 @@
     <script src="js/report-details.js"></script>
 
     <script src="js/app.js"></script>
-
-    <script src="js/intelligence.js"></script>
 
 </body>
 
