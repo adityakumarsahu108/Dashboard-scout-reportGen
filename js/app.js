@@ -163,7 +163,219 @@ function showError(message) {
 
 }
 
+/*
+==========================================
+SPA NAVIGATION
+==========================================
+*/
 
+document.addEventListener("DOMContentLoaded", () => {
+
+    initializeNavigation();
+
+});
+
+
+function initializeNavigation() {
+
+    const navItems =
+        document.querySelectorAll(".nav-item");
+
+    const pages =
+        document.querySelectorAll(".page");
+
+    const pageTitle =
+        document.getElementById("page-title");
+
+    const pageDescription =
+        document.getElementById("page-description");
+
+
+    navItems.forEach((navItem) => {
+
+        navItem.addEventListener("click", () => {
+
+            const targetPage =
+                navItem.dataset.page;
+
+
+            if (!targetPage) {
+                return;
+            }
+
+
+            /*
+            --------------------------------------
+            UPDATE ACTIVE NAVIGATION
+            --------------------------------------
+            */
+
+            navItems.forEach((item) => {
+
+                item.classList.remove("active");
+
+            });
+
+
+            navItem.classList.add("active");
+
+
+            /*
+            --------------------------------------
+            HIDE ALL PAGES
+            --------------------------------------
+            */
+
+            pages.forEach((page) => {
+
+                page.classList.add("hidden");
+
+            });
+
+
+            /*
+            --------------------------------------
+            SHOW SELECTED PAGE
+            --------------------------------------
+            */
+
+            const selectedPage =
+                document.getElementById(
+                    `${targetPage}-page`
+                );
+
+
+            if (!selectedPage) {
+
+                console.error(
+                    `Page not found: ${targetPage}-page`
+                );
+
+                return;
+
+            }
+
+
+            selectedPage.classList.remove("hidden");
+
+
+            /*
+            --------------------------------------
+            UPDATE HEADER
+            --------------------------------------
+            */
+
+            updatePageHeader(
+                targetPage,
+                pageTitle,
+                pageDescription
+            );
+
+
+            /*
+            --------------------------------------
+            LOAD INTELLIGENCE
+            --------------------------------------
+            */
+
+            if (
+                targetPage === "intelligence" &&
+                typeof loadIntelligence === "function"
+            ) {
+
+                loadIntelligence();
+
+            }
+
+        });
+
+    });
+
+}
+
+
+/*
+==========================================
+PAGE HEADER
+==========================================
+*/
+
+function updatePageHeader(
+    page,
+    titleElement,
+    descriptionElement
+) {
+
+    const pageInfo = {
+
+        dashboard: {
+
+            title:
+                "Security Dashboard",
+
+            description:
+                "Overview of security alerts and reports"
+
+        },
+
+        reports: {
+
+            title:
+                "Reports",
+
+            description:
+                "Security report history and details"
+
+        },
+
+        analytics: {
+
+            title:
+                "Analytics",
+
+            description:
+                "Security trends and analytics"
+
+        },
+
+        intelligence: {
+
+            title:
+                "Security Intelligence",
+
+            description:
+                "AI-powered security intelligence summary"
+
+        }
+
+    };
+
+
+    const info =
+        pageInfo[page];
+
+
+    if (!info) {
+        return;
+    }
+
+
+    if (titleElement) {
+
+        titleElement.textContent =
+            info.title;
+
+    }
+
+
+    if (descriptionElement) {
+
+        descriptionElement.textContent =
+            info.description;
+
+    }
+
+}
 /*
 ==========================================
 EXPORT
