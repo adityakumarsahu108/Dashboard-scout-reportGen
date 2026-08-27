@@ -20,6 +20,9 @@ CONFIGURATION
 const INTELLIGENCE_API =
     "https://dailyreportgenbackend.adityakumarsahu108.workers.dev/api/v1/intelligence/summary";
 
+// How often the "Updated X ago" label re-ticks without refetching data.
+const RELATIVE_TIME_TICK_MS = 30000;
+
 
 /*
 ====================================================
@@ -200,6 +203,62 @@ function priorityClass(priority) {
 
 /*
 ====================================================
+PRESENTATION HELPERS
+(purely cosmetic — do not touch data shape or logic)
+====================================================
+*/
+
+// Returns an inline animation-delay so rows stagger in on render
+// instead of popping in all at once. Pair with class="row-anim".
+function rowDelay(index, stepMs = 40) {
+    return `animation-delay:${index * stepMs}ms;`;
+}
+
+// After inserting bars/gauges with an inline target width, animate
+// them from 0 -> target so the panel feels alive instead of static.
+function animateFills(root) {
+
+    if (!root) {
+        return;
+    }
+
+    const fills = root.querySelectorAll(
+        ".score-gauge-fill, .lifecycle-new, .lifecycle-carried, .bar-fill"
+    );
+
+    fills.forEach(el => {
+        const target = el.style.width;
+        if (!target) return;
+        el.style.width = "0%";
+        // Force reflow so the browser registers the 0% start state.
+        // eslint-disable-next-line no-unused-expressions
+        el.offsetWidth;
+        requestAnimationFrame(() => {
+            el.style.width = target;
+        });
+    });
+
+}
+
+
+function emptyState(message, options = {}) {
+
+    const icon = options.icon || "\u25CB";
+    const showRetry = Boolean(options.retry);
+
+    return `
+        <div class="empty-state">
+            <div class="empty-icon">${icon}</div>
+            ${escapeHTML(message)}
+            ${showRetry ? `<div style="margin-top:12px;"><button class="btn-refresh" style="display:inline-flex; padding:7px 12px; font-size:12px;" onclick="loadIntelligence()">Try again</button></div>` : ""}
+        </div>
+    `;
+
+}
+
+
+/*
+====================================================
 STATUS BANNER
 ====================================================
 */
@@ -217,7 +276,12 @@ function setStatus(message, type = "loading") {
         return;
     }
 
-    status.textContent = message;
+    const showRetry = type === "error";
+
+    status.innerHTML = `
+        <span class="status-banner-text">${escapeHTML(message)}</span>
+        ${showRetry ? `<button class="status-retry" type="button" onclick="loadIntelligence()">Retry</button>` : ""}
+    `;
     status.className = `status-banner ${type}`;
 
 }
@@ -230,6 +294,7 @@ function setLive(state, label) {
 
     if (dot) {
         dot.classList.toggle("is-error", state === "error");
+        dot.classList.toggle("is-loading", state === "loading");
     }
 
     if (text) {
@@ -244,6 +309,26 @@ function setLive(state, label) {
 LOAD INTELLIGENCE
 ====================================================
 */
+
+// Remembers the last successful payload's generatedAt so the
+// "Updated X ago" pill can keep re-ticking between fetches.
+let lastGeneratedAt = null;
+let relativeTimeInterval = null;
+
+function startRelativeTimeTicker() {
+
+    if (relativeTimeInterval) {
+        clearInterval(relativeTimeInterval);
+    }
+
+    relativeTimeInterval = setInterval(() => {
+        if (lastGeneratedAt) {
+            setLive("ok", `Updated ${relativeTime(lastGeneratedAt)}`);
+        }
+    }, RELATIVE_TIME_TICK_MS);
+
+}
+
 
 async function loadIntelligence() {
 
@@ -286,7 +371,10 @@ async function loadIntelligence() {
         renderIntelligence(data);
 
         setStatus("");
-        setLive("ok", data?.generatedAt ? `Updated ${relativeTime(data.generatedAt)}` : "Live");
+
+        lastGeneratedAt = data?.generatedAt || null;
+        setLive("ok", lastGeneratedAt ? `Updated ${relativeTime(lastGeneratedAt)}` : "Live");
+        startRelativeTimeTicker();
 
     }
     catch (error) {
@@ -359,6 +447,13 @@ function renderOverview(data) {
     getElement("unassigned-alerts").textContent = formatNumber(unassigned);
     getElement("insight-count").textContent = formatNumber(insights);
 
+    // Quiet pulse on the headline number when there's something to act on —
+    // draws the eye without a popup or sound.
+    const highRiskEl = getElement("highrisk-alerts");
+    if (highRiskEl) {
+        highRiskEl.classList.toggle("is-alert", Number(highRisk) > 0);
+    }
+
     renderDelta("total-delta", change.totalAlerts, change.totalPercentage);
     renderDelta("cyera-delta", change.cyera, change.cyeraPercentage);
     renderDelta("purview-delta", change.purview, change.purviewPercentage);
@@ -425,24 +520,20 @@ function renderFindings(data) {
     }
 
     if (!insights.length) {
-        container.innerHTML = `
-            <div class="empty-state">
-                No intelligence findings were generated for this report.
-            </div>
-        `;
+        container.innerHTML = emptyState("No intelligence findings were generated for this report.", { icon: "\u2713" });
         return;
     }
 
     insights.sort((a, b) => priorityRank(a.priority) - priorityRank(b.priority));
 
     container.innerHTML = insights
-        .map(insight => {
+        .map((insight, index) => {
 
             const priority = String(insight.priority || "low").toLowerCase();
             const pClass = priorityClass(priority);
 
             return `
-                <div class="finding-row">
+                <div class="finding-row row-anim" style="${rowDelay(index)}">
 
                     <div class="finding-bar ${pClass}"></div>
 
@@ -501,11 +592,7 @@ function renderPriorityQueue(data) {
         : [];
 
     if (!alerts.length) {
-        container.innerHTML = `
-            <div class="empty-state">
-                No alerts are currently queued for review.
-            </div>
-        `;
+        container.innerHTML = emptyState("No alerts are currently queued for review.", { icon: "\u2713" });
         return;
     }
 
@@ -522,17 +609,18 @@ function renderPriorityQueue(data) {
             const scorePct = Math.max(4, Math.min(100, ((alert.priorityScore ?? 0) / maxScore) * 100));
 
             const reasons = Array.isArray(alert.reasons) ? alert.reasons.slice(0, 3) : [];
+            const extraReasons = Array.isArray(alert.reasons) ? alert.reasons.length - reasons.length : 0;
 
             const reasonChips = reasons
                 .map(reason => `<span class="chip">${escapeHTML(reason)}</span>`)
-                .join("");
+                .join("") + (extraReasons > 0 ? `<span class="chip">+${extraReasons} more</span>` : "");
 
             const statusChip = alert.status
-                ? `<span class="chip">${escapeHTML(formatInsightType(alert.status))}</span>`
+                ? `<span class="chip chip-status">${escapeHTML(formatInsightType(alert.status))}</span>`
                 : "";
 
             return `
-                <div class="queue-row">
+                <div class="queue-row row-anim" style="${rowDelay(index, 30)}">
 
                     <div class="queue-rank">${String(index + 1).padStart(2, "0")}</div>
 
@@ -540,7 +628,7 @@ function renderPriorityQueue(data) {
 
                         <div class="queue-name-row">
                             <span class="sev-dot sev-${escapeHTML(String(alert.severity || "unknown").toLowerCase())}"></span>
-                            <span class="queue-name">${escapeHTML(alert.name || "Untitled alert")}</span>
+                            <span class="queue-name" title="${escapeHTML(alert.name || "Untitled alert")}">${escapeHTML(alert.name || "Untitled alert")}</span>
                         </div>
 
                         <div class="queue-chips">
@@ -563,6 +651,8 @@ function renderPriorityQueue(data) {
         })
         .join("");
 
+    animateFills(container);
+
 }
 
 
@@ -572,7 +662,7 @@ COMPARISON
 ====================================================
 */
 
-function renderComparisonCard(label, current, previous, change, percentage) {
+function renderComparisonCard(label, current, previous, change, percentage, index = 0) {
 
     const c = Number(change);
     const direction = c > 0 ? "up" : c < 0 ? "down" : "flat";
@@ -580,7 +670,7 @@ function renderComparisonCard(label, current, previous, change, percentage) {
     const sign = c > 0 ? "+" : "";
 
     return `
-        <div class="compare-card">
+        <div class="compare-card row-anim" style="${rowDelay(index, 60)}">
             <div class="compare-label">${escapeHTML(label)}</div>
             <div class="compare-values">
                 <span class="compare-current">${formatNumber(current)}</span>
@@ -602,7 +692,7 @@ function renderComparison(data) {
     const comparison = data?.comparison;
 
     if (!comparison) {
-        container.innerHTML = `<div class="empty-state">No comparison data available.</div>`;
+        container.innerHTML = emptyState("No comparison data available.");
         return;
     }
 
@@ -616,21 +706,24 @@ function renderComparison(data) {
             currentReport.totalAlerts ?? comparison.current ?? 0,
             previousReport.totalAlerts ?? comparison.previous ?? 0,
             change.totalAlerts ?? 0,
-            change.totalPercentage ?? 0
+            change.totalPercentage ?? 0,
+            0
         ) +
         renderComparisonCard(
             "Cyera",
             currentReport.cyera ?? 0,
             previousReport.cyera ?? 0,
             change.cyera ?? 0,
-            change.cyeraPercentage ?? 0
+            change.cyeraPercentage ?? 0,
+            1
         ) +
         renderComparisonCard(
             "Purview",
             currentReport.purview ?? 0,
             previousReport.purview ?? 0,
             change.purview ?? 0,
-            change.purviewPercentage ?? 0
+            change.purviewPercentage ?? 0,
+            2
         );
 
 }
@@ -648,7 +741,7 @@ function renderLifecycle(data) {
     const lifecycle = data?.lifecycle;
 
     if (!lifecycle) {
-        container.innerHTML = `<div class="empty-state">No lifecycle data available.</div>`;
+        container.innerHTML = emptyState("No lifecycle data available.");
         return;
     }
 
@@ -697,6 +790,8 @@ function renderLifecycle(data) {
 
     `;
 
+    animateFills(container);
+
 }
 
 
@@ -715,13 +810,13 @@ function renderBarGroup(title, entries, toneFn) {
     const max = Math.max(...entries.map(e => e.value), 1);
 
     const rows = entries
-        .map(entry => {
+        .map((entry, index) => {
 
             const width = Math.max(4, Math.min(100, (entry.value / max) * 100));
             const tone = toneFn ? toneFn(entry.label) : "grey";
 
             return `
-                <div class="bar-row">
+                <div class="bar-row row-anim" style="${rowDelay(index, 40)}">
                     <span class="bar-label" title="${escapeHTML(entry.label)}">${escapeHTML(entry.label)}</span>
                     <div class="bar-track">
                         <div class="bar-fill tone-${tone}" style="width:${width}%;"></div>
@@ -796,7 +891,9 @@ function renderAlertBreakdown(data) {
         renderBarGroup("Policy Volume", policyEntries, () => "grey")
     ].join("");
 
-    container.innerHTML = html || `<div class="empty-state">No breakdown data available.</div>`;
+    container.innerHTML = html || emptyState("No breakdown data available.");
+
+    animateFills(container);
 
 }
 
@@ -813,7 +910,7 @@ function renderReport(data) {
     const report = data?.report;
 
     if (!report) {
-        container.innerHTML = `<div class="empty-state">No report information available.</div>`;
+        container.innerHTML = emptyState("No report information available.");
         return;
     }
 
@@ -902,8 +999,12 @@ function showPageError(message) {
 
         element.innerHTML = `
             <div class="empty-state">
+                <div class="empty-icon">\u26A0</div>
                 Unable to load intelligence.
                 <small>${escapeHTML(message)}</small>
+                <div style="margin-top:12px;">
+                    <button class="btn-refresh" style="display:inline-flex; padding:7px 12px; font-size:12px;" onclick="loadIntelligence()">Try again</button>
+                </div>
             </div>
         `;
 
@@ -914,7 +1015,7 @@ function showPageError(message) {
 
 /*
 ====================================================
-REFRESH BUTTON
+REFRESH BUTTON + SHORTCUT
 ====================================================
 */
 
@@ -923,6 +1024,24 @@ const refreshButton = getElement("refresh-button");
 if (refreshButton) {
     refreshButton.addEventListener("click", loadIntelligence);
 }
+
+// Quiet power-user affordance: "R" refreshes, same as the button.
+// Ignored while typing in a form field (none exist on this page today,
+// but this keeps the shortcut safe if one is ever added).
+document.addEventListener("keydown", (event) => {
+
+    const tag = (event.target?.tagName || "").toLowerCase();
+    const isTyping = tag === "input" || tag === "textarea" || event.target?.isContentEditable;
+
+    if (isTyping || event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+    }
+
+    if (event.key === "r" || event.key === "R") {
+        loadIntelligence();
+    }
+
+});
 
 
 /*

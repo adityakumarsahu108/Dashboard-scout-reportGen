@@ -23,6 +23,7 @@
         --bg-raised-hover: #212b37;
         --border: #232d3a;
         --border-soft: #1a222c;
+        --border-strong: #2e3a49;
 
         --text-primary: #eaf0f6;
         --text-secondary: #8d99aa;
@@ -45,12 +46,18 @@
 
         --radius: 10px;
         --radius-sm: 6px;
+
+        --ease: cubic-bezier(.4, 0, .2, 1);
     }
 
     * {
         box-sizing: border-box;
         margin: 0;
         padding: 0;
+    }
+
+    html {
+        scroll-behavior: smooth;
     }
 
     body {
@@ -70,28 +77,42 @@
     }
 
     button:focus-visible,
-    [tabindex]:focus-visible {
+    [tabindex]:focus-visible,
+    a:focus-visible {
         outline: 2px solid var(--blue);
         outline-offset: 2px;
+        border-radius: 3px;
     }
+
+    /* thin, quiet scrollbars that fit the panel language */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a4a5c; }
 
     .page {
         max-width: 1440px;
         margin: 0 auto;
-        padding: 28px 32px 60px;
+        padding: 0 32px 60px;
     }
 
     /* ============================================
-       TOPBAR
+       TOPBAR (sticky, glassy — the surface you always see)
     ============================================ */
 
     .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 40;
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: 20px;
-        padding-bottom: 22px;
+        padding: 22px 0;
         margin-bottom: 22px;
+        background: rgba(10, 14, 20, .82);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
         border-bottom: 1px solid var(--border-soft);
     }
 
@@ -112,6 +133,16 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        overflow: hidden;
+    }
+
+    /* quiet radar sweep — reinforces "monitoring", not decoration */
+    .brand-mark::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: conic-gradient(from 0deg, rgba(91, 157, 249, .35), transparent 28%);
+        animation: sweep 4s linear infinite;
     }
 
     .brand-mark::before {
@@ -121,6 +152,11 @@
         border-radius: 50%;
         background: var(--blue);
         box-shadow: 0 0 0 4px var(--blue-dim), 0 0 0 8px rgba(91, 157, 249, .06);
+        z-index: 1;
+    }
+
+    @keyframes sweep {
+        to { transform: rotate(360deg); }
     }
 
     .brand-text .eyebrow {
@@ -156,6 +192,7 @@
         border: 1px solid var(--border);
         border-radius: 999px;
         background: var(--bg-panel);
+        transition: border-color .2s var(--ease);
     }
 
     .live-dot {
@@ -166,10 +203,8 @@
         animation: pulse-dot 2s ease-in-out infinite;
     }
 
-    .live-dot.is-error {
-        background: var(--red);
-        animation: none;
-    }
+    .live-dot.is-loading { background: var(--blue); }
+    .live-dot.is-error { background: var(--red); animation: none; }
 
     @keyframes pulse-dot {
         0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(63, 185, 104, .45); }
@@ -193,17 +228,22 @@
         padding: 9px 14px;
         font-size: 13px;
         font-weight: 600;
-        transition: background .15s ease, border-color .15s ease;
+        transition: background .15s var(--ease), border-color .15s var(--ease), transform .15s var(--ease);
     }
 
     .btn-refresh:hover {
         background: var(--bg-raised-hover);
-        border-color: #2e3a49;
+        border-color: var(--border-strong);
+    }
+
+    .btn-refresh:active {
+        transform: scale(.97);
     }
 
     .btn-refresh .icon {
         display: inline-block;
         transition: transform .5s ease;
+        line-height: 1;
     }
 
     .btn-refresh.is-loading .icon {
@@ -214,19 +254,31 @@
         to { transform: rotate(360deg); }
     }
 
+    .kbd-hint {
+        font-family: var(--font-mono);
+        font-size: 10.5px;
+        color: var(--text-tertiary);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 1px 5px;
+        margin-left: 2px;
+    }
+
     /* ============================================
        STATUS / ERROR BANNER
     ============================================ */
 
     .status-banner {
         display: none;
+        justify-content: space-between;
         align-items: center;
-        gap: 10px;
+        gap: 14px;
         margin-bottom: 20px;
         padding: 12px 16px;
         border-radius: var(--radius-sm);
         font-size: 13px;
         font-family: var(--font-mono);
+        animation: fade-in-down .25s var(--ease);
     }
 
     .status-banner.loading {
@@ -241,6 +293,33 @@
         background: var(--red-dim);
         color: #f5a5a3;
         border: 1px solid rgba(239, 83, 80, .3);
+    }
+
+    .status-banner-text {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .status-retry {
+        background: rgba(239, 83, 80, .18);
+        border: 1px solid rgba(239, 83, 80, .4);
+        color: #f5a5a3;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 5px 10px;
+        white-space: nowrap;
+        transition: background .15s var(--ease);
+    }
+
+    .status-retry:hover {
+        background: rgba(239, 83, 80, .3);
+    }
+
+    @keyframes fade-in-down {
+        from { opacity: 0; transform: translateY(-6px); }
+        to { opacity: 1; transform: translateY(0); }
     }
 
     /* ============================================
@@ -258,8 +337,14 @@
     }
 
     .readout-cell {
+        position: relative;
         padding: 16px 18px;
         border-right: 1px solid var(--border-soft);
+        transition: background .15s var(--ease);
+    }
+
+    .readout-cell:hover {
+        background: rgba(255, 255, 255, .015);
     }
 
     .readout-cell:last-child {
@@ -281,10 +366,21 @@
         font-weight: 600;
         line-height: 1;
         color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
+        transition: color .2s var(--ease);
     }
 
     .readout-value.accent-red { color: var(--red); }
     .readout-value.accent-amber { color: var(--amber); }
+
+    .readout-value.is-alert {
+        animation: value-alert 2.4s ease-in-out infinite;
+    }
+
+    @keyframes value-alert {
+        0%, 100% { text-shadow: 0 0 0 rgba(239, 83, 80, 0); }
+        50% { text-shadow: 0 0 14px rgba(239, 83, 80, .45); }
+    }
 
     .readout-delta {
         margin-top: 8px;
@@ -293,6 +389,7 @@
         display: flex;
         align-items: center;
         gap: 4px;
+        min-height: 15px;
     }
 
     .readout-delta.up { color: var(--red); }
@@ -321,6 +418,7 @@
         border: 1px solid var(--border);
         border-radius: var(--radius);
         padding: 20px;
+        transition: border-color .2s var(--ease);
     }
 
     .panel-head {
@@ -341,6 +439,25 @@
         font-family: var(--font-mono);
         font-size: 11px;
         color: var(--text-tertiary);
+    }
+
+    /* ============================================
+       ROW ENTRANCE ANIMATION
+       (applied via inline animation-delay from JS —
+       purely presentational, no data logic involved)
+    ============================================ */
+
+    .row-anim {
+        animation: rise-in .35s var(--ease) both;
+    }
+
+    @keyframes rise-in {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .row-anim { animation: none; }
     }
 
     /* ============================================
@@ -421,7 +538,7 @@
         padding: 12px 10px;
         border-radius: var(--radius-sm);
         border: 1px solid transparent;
-        transition: background .12s ease, border-color .12s ease;
+        transition: background .12s var(--ease), border-color .12s var(--ease);
     }
 
     .queue-row + .queue-row {
@@ -458,9 +575,12 @@
         flex-shrink: 0;
     }
 
-    .sev-dot.sev-critical, .sev-dot.sev-high { background: var(--red); }
-    .sev-dot.sev-medium { background: var(--amber); }
-    .sev-dot.sev-low { background: var(--green); }
+    .sev-dot.sev-critical, .sev-dot.sev-high {
+        background: var(--red);
+        box-shadow: 0 0 0 3px var(--red-dim);
+    }
+    .sev-dot.sev-medium { background: var(--amber); box-shadow: 0 0 0 3px var(--amber-dim); }
+    .sev-dot.sev-low { background: var(--green); box-shadow: 0 0 0 3px var(--green-dim); }
     .sev-dot.sev-unknown { background: var(--text-tertiary); }
 
     .queue-name {
@@ -487,6 +607,17 @@
         padding: 2px 7px;
         border-radius: 4px;
         white-space: nowrap;
+        transition: border-color .15s var(--ease), color .15s var(--ease);
+    }
+
+    .chip:hover {
+        border-color: var(--border-strong);
+        color: var(--text-primary);
+    }
+
+    .chip.chip-status {
+        color: var(--text-primary);
+        border-color: var(--border-strong);
     }
 
     .queue-score {
@@ -500,6 +631,7 @@
         font-family: var(--font-mono);
         font-size: 12px;
         font-weight: 600;
+        font-variant-numeric: tabular-nums;
     }
 
     .score-gauge {
@@ -513,6 +645,8 @@
     .score-gauge-fill {
         height: 100%;
         border-radius: 3px;
+        width: 0;
+        transition: width .6s var(--ease);
     }
 
     .score-gauge-fill.priority-high { background: var(--red); }
@@ -534,6 +668,12 @@
         border: 1px solid var(--border);
         border-radius: var(--radius-sm);
         padding: 14px;
+        transition: border-color .15s var(--ease), transform .15s var(--ease);
+    }
+
+    .compare-card:hover {
+        border-color: var(--border-strong);
+        transform: translateY(-1px);
     }
 
     .compare-label {
@@ -556,6 +696,7 @@
         font-family: var(--font-mono);
         font-size: 22px;
         font-weight: 600;
+        font-variant-numeric: tabular-nums;
     }
 
     .compare-previous {
@@ -590,8 +731,19 @@
         margin-bottom: 14px;
     }
 
-    .lifecycle-new { height: 100%; background: var(--blue); }
-    .lifecycle-carried { height: 100%; background: var(--text-tertiary); }
+    .lifecycle-new {
+        height: 100%;
+        background: var(--blue);
+        width: 0;
+        transition: width .6s var(--ease);
+    }
+
+    .lifecycle-carried {
+        height: 100%;
+        background: var(--text-tertiary);
+        width: 0;
+        transition: width .6s var(--ease) .1s;
+    }
 
     .lifecycle-legend {
         display: flex;
@@ -625,6 +777,7 @@
     .lifecycle-legend-value {
         font-family: var(--font-mono);
         color: var(--text-primary);
+        font-variant-numeric: tabular-nums;
     }
 
     /* ============================================
@@ -678,6 +831,8 @@
         height: 100%;
         border-radius: 3px;
         background: var(--blue);
+        width: 0;
+        transition: width .6s var(--ease);
     }
 
     .bar-fill.tone-red { background: var(--red); }
@@ -690,6 +845,7 @@
         font-size: 12px;
         color: var(--text-primary);
         text-align: right;
+        font-variant-numeric: tabular-nums;
     }
 
     /* ============================================
@@ -707,6 +863,11 @@
         border: 1px solid var(--border);
         border-radius: var(--radius-sm);
         padding: 11px 12px;
+        transition: border-color .15s var(--ease);
+    }
+
+    .report-item:hover {
+        border-color: var(--border-strong);
     }
 
     .report-item span {
@@ -753,15 +914,21 @@
     }
 
     /* ============================================
-       EMPTY STATE
+       EMPTY / ERROR STATES
     ============================================ */
 
     .empty-state {
-        padding: 26px 10px;
+        padding: 30px 10px;
         text-align: center;
         color: var(--text-tertiary);
         font-size: 13px;
         line-height: 1.6;
+    }
+
+    .empty-state .empty-icon {
+        font-size: 18px;
+        margin-bottom: 8px;
+        opacity: .6;
     }
 
     .empty-state small {
@@ -770,6 +937,31 @@
         font-family: var(--font-mono);
         font-size: 11.5px;
         color: var(--text-tertiary);
+    }
+
+    /* ============================================
+       SKELETON LOADERS
+       (shown before first successful fetch)
+    ============================================ */
+
+    .skel {
+        border-radius: var(--radius-sm);
+        background: linear-gradient(100deg, var(--bg-raised) 30%, var(--bg-raised-hover) 50%, var(--bg-raised) 70%);
+        background-size: 200% 100%;
+        animation: shimmer 1.6s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+        0% { background-position: 140% 0; }
+        100% { background-position: -40% 0; }
+    }
+
+    .skel-line { height: 12px; margin-bottom: 8px; }
+    .skel-row { height: 44px; margin-bottom: 10px; }
+    .skel-row:last-child { margin-bottom: 0; }
+
+    @media (prefers-reduced-motion: reduce) {
+        .skel { animation: none; background: var(--bg-raised); }
     }
 
     /* ============================================
@@ -788,8 +980,9 @@
     }
 
     @media (max-width: 620px) {
-        .page { padding: 18px; }
-        .topbar { flex-direction: column; align-items: flex-start; gap: 14px; }
+        .page { padding: 0 18px 40px; }
+        .topbar { flex-direction: column; align-items: flex-start; gap: 14px; padding: 16px 0; }
+        .topbar-actions { width: 100%; justify-content: space-between; }
         .readout-strip { grid-template-columns: repeat(2, 1fr); }
         .readout-cell:nth-child(2n) { border-right: none; }
         .readout-cell:nth-child(n+3) { border-top: 1px solid var(--border-soft); }
@@ -797,10 +990,11 @@
         .report-grid { grid-template-columns: 1fr; }
         .queue-row { grid-template-columns: 20px 1fr; }
         .queue-score { grid-column: 2; flex-direction: row; align-items: center; margin-top: 4px; }
+        .kbd-hint { display: none; }
     }
 
     @media (prefers-reduced-motion: reduce) {
-        .live-dot, .btn-refresh .icon {
+        .live-dot, .btn-refresh .icon, .brand-mark::after, .readout-value.is-alert {
             animation: none !important;
         }
     }
@@ -834,9 +1028,10 @@
                 <span id="live-label">Connecting&hellip;</span>
             </div>
 
-            <button class="btn-refresh" id="refresh-button" type="button">
+            <button class="btn-refresh" id="refresh-button" type="button" title="Refresh (R)">
                 <span class="icon">&#8635;</span>
                 <span>Refresh</span>
+                <span class="kbd-hint">R</span>
             </button>
 
         </div>
@@ -908,7 +1103,9 @@
                     <div class="panel-meta" id="findings-meta"></div>
                 </div>
                 <div id="insights-container">
-                    <div class="empty-state">Loading findings&hellip;</div>
+                    <div class="skel skel-line" style="width:70%;"></div>
+                    <div class="skel skel-line" style="width:92%;"></div>
+                    <div class="skel skel-line" style="width:55%;"></div>
                 </div>
             </section>
 
@@ -918,7 +1115,9 @@
                     <div class="panel-meta">Ranked by priority score</div>
                 </div>
                 <div id="queue-container">
-                    <div class="empty-state">Loading queue&hellip;</div>
+                    <div class="skel skel-row"></div>
+                    <div class="skel skel-row"></div>
+                    <div class="skel skel-row"></div>
                 </div>
             </section>
 
@@ -928,7 +1127,9 @@
                     <div class="panel-meta">vs previous report</div>
                 </div>
                 <div id="comparison-container" class="compare-grid">
-                    <div class="empty-state">Loading&hellip;</div>
+                    <div class="skel skel-row"></div>
+                    <div class="skel skel-row"></div>
+                    <div class="skel skel-row"></div>
                 </div>
             </section>
 
@@ -943,7 +1144,9 @@
                     <div class="panel-title">Alert Lifecycle</div>
                 </div>
                 <div id="lifecycle-container">
-                    <div class="empty-state">Loading&hellip;</div>
+                    <div class="skel skel-line" style="height:10px; border-radius:999px; margin-bottom:14px;"></div>
+                    <div class="skel skel-line" style="width:80%;"></div>
+                    <div class="skel skel-line" style="width:60%;"></div>
                 </div>
             </section>
 
@@ -952,7 +1155,10 @@
                     <div class="panel-title">Alert Breakdown</div>
                 </div>
                 <div id="alert-breakdown">
-                    <div class="empty-state">Loading&hellip;</div>
+                    <div class="skel skel-line" style="width:40%;"></div>
+                    <div class="skel skel-line" style="width:95%;"></div>
+                    <div class="skel skel-line" style="width:80%;"></div>
+                    <div class="skel skel-line" style="width:65%;"></div>
                 </div>
             </section>
 
@@ -961,13 +1167,13 @@
                     <div class="panel-title">Latest Report</div>
                 </div>
                 <div id="report-container">
-                    <div class="empty-state">Loading&hellip;</div>
+                    <div class="skel skel-row"></div>
                 </div>
             </section>
 
             <section class="panel">
                 <div id="generated-container" class="status-footer">
-                    &mdash;
+                    <div class="skel skel-line" style="width:60%;"></div>
                 </div>
             </section>
 
