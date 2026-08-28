@@ -414,6 +414,10 @@ function renderIntelligence(data) {
     renderPriorityQueue(data);
     renderComparison(data);
     renderLifecycle(data);
+
+    // New security intelligence sections
+    renderCaseOutcome(data);
+    renderRiskAcceptance(data);
     renderAlertBreakdown(data);
     renderReport(data);
     renderGeneratedAt(data);
@@ -794,7 +798,651 @@ function renderLifecycle(data) {
 
 }
 
+/*
+====================================================
+CASE OUTCOME
+====================================================
+*/
 
+function renderCaseOutcome(data) {
+
+    const container = getElement("case-outcome-container");
+
+    if (!container) {
+        return;
+    }
+
+    /*
+    Support both:
+
+        data.caseOutcome
+
+    and:
+
+        data.securityIntelligence.caseOutcome
+
+    This keeps the frontend tolerant of either API shape.
+    */
+    const caseOutcome =
+        data?.caseOutcome ||
+        data?.securityIntelligence?.caseOutcome;
+
+    if (!caseOutcome) {
+        container.innerHTML =
+            emptyState("No case outcome data available.");
+
+        return;
+    }
+
+    const totalCases =
+        Number(caseOutcome.totalCases ?? 0);
+
+    const outcomes =
+        caseOutcome.outcomes || {};
+
+    const disposition =
+        caseOutcome.disposition || {};
+
+    const active =
+        caseOutcome.active || {};
+
+    const riskAcceptance =
+        caseOutcome.riskAcceptance || {};
+
+    const formalClosure =
+        caseOutcome.formalClosure || {};
+
+    const dispositioned =
+        Number(disposition.total ?? 0);
+
+    const activeCases =
+        Number(active.total ?? 0);
+
+    const riskAccepted =
+        Number(riskAcceptance.total ?? 0);
+
+    const closure =
+        Number(formalClosure.total ?? 0);
+
+    const outcomeEntries = [
+        {
+            label: "Open",
+            value: Number(outcomes.open ?? 0),
+            tone: "amber"
+        },
+        {
+            label: "Risk accepted",
+            value: Number(outcomes.riskAccepted ?? 0),
+            tone: "blue"
+        },
+        {
+            label: "False positive",
+            value: Number(outcomes.falsePositive ?? 0),
+            tone: "green"
+        },
+        {
+            label: "Resolved",
+            value: Number(outcomes.resolved ?? 0),
+            tone: "green"
+        },
+        {
+            label: "Closed",
+            value: Number(outcomes.closed ?? 0),
+            tone: "green"
+        }
+    ].filter(item => item.value > 0);
+
+    const maxOutcome =
+        Math.max(
+            ...outcomeEntries.map(item => item.value),
+            1
+        );
+
+    const severityDispositioned =
+        caseOutcome.severity?.dispositioned || {};
+
+    const severityActive =
+        caseOutcome.severity?.active || {};
+
+    const severityRows = [
+        {
+            label: "Critical",
+            dispositioned: Number(severityDispositioned.critical ?? 0),
+            active: Number(severityActive.critical ?? 0)
+        },
+        {
+            label: "High",
+            dispositioned: Number(severityDispositioned.high ?? 0),
+            active: Number(severityActive.high ?? 0)
+        },
+        {
+            label: "Medium",
+            dispositioned: Number(severityDispositioned.medium ?? 0),
+            active: Number(severityActive.medium ?? 0)
+        },
+        {
+            label: "Low",
+            dispositioned: Number(severityDispositioned.low ?? 0),
+            active: Number(severityActive.low ?? 0)
+        }
+    ].filter(
+        row =>
+            row.dispositioned > 0 ||
+            row.active > 0
+    );
+
+    container.innerHTML = `
+
+        <!-- SUMMARY -->
+
+        <div class="intel-summary-grid">
+
+            <div class="intel-stat">
+                <span>All Cases</span>
+                <strong>${formatNumber(totalCases)}</strong>
+            </div>
+
+            <div class="intel-stat">
+                <span>Active</span>
+                <strong class="accent-amber">
+                    ${formatNumber(activeCases)}
+                </strong>
+                <small>
+                    ${formatPercentage(active.rate)}
+                </small>
+            </div>
+
+            <div class="intel-stat">
+                <span>Dispositioned</span>
+                <strong>
+                    ${formatNumber(dispositioned)}
+                </strong>
+                <small>
+                    ${formatPercentage(disposition.rate)}
+                </small>
+            </div>
+
+            <div class="intel-stat">
+                <span>Risk Accepted</span>
+                <strong class="accent-blue">
+                    ${formatNumber(riskAccepted)}
+                </strong>
+                <small>
+                    ${formatPercentage(riskAcceptance.rate)}
+                </small>
+            </div>
+
+        </div>
+
+
+        <!-- OUTCOME DISTRIBUTION -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Outcome distribution
+            </div>
+
+            <div class="intel-bars">
+
+                ${outcomeEntries.length
+            ? outcomeEntries.map((item, index) => {
+
+                const width =
+                    Math.max(
+                        4,
+                        Math.min(
+                            100,
+                            (item.value / maxOutcome) * 100
+                        )
+                    );
+
+                return `
+                                <div
+                                    class="intel-bar-row row-anim"
+                                    style="${rowDelay(index, 35)}"
+                                >
+                                    <span class="intel-bar-label">
+                                        ${escapeHTML(item.label)}
+                                    </span>
+
+                                    <div class="intel-bar-track">
+                                        <div
+                                            class="intel-bar-fill tone-${item.tone}"
+                                            style="width:${width}%"
+                                        ></div>
+                                    </div>
+
+                                    <span class="intel-bar-value">
+                                        ${formatNumber(item.value)}
+                                    </span>
+                                </div>
+                            `;
+
+            }).join("")
+
+            : emptyState("No outcome distribution available.")
+        }
+
+            </div>
+
+        </div>
+
+
+        <!-- SEVERITY -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Severity profile
+            </div>
+
+            <div class="case-severity-table">
+
+                <div class="case-severity-header">
+                    <span>Severity</span>
+                    <span>Active</span>
+                    <span>Dispositioned</span>
+                </div>
+
+                ${severityRows.length
+            ? severityRows.map((row, index) => `
+                            <div
+                                class="case-severity-row row-anim"
+                                style="${rowDelay(index, 35)}"
+                            >
+                                <span class="case-severity-name">
+                                    <span class="sev-dot sev-${row.label.toLowerCase()}"></span>
+                                    ${escapeHTML(row.label)}
+                                </span>
+
+                                <span class="case-severity-value">
+                                    ${formatNumber(row.active)}
+                                </span>
+
+                                <span class="case-severity-value">
+                                    ${formatNumber(row.dispositioned)}
+                                </span>
+                            </div>
+                        `).join("")
+
+            : `
+                            <div class="intel-empty-inline">
+                                No severity data available.
+                            </div>
+                        `
+        }
+
+            </div>
+
+        </div>
+
+
+        <!-- CLOSURE STATUS -->
+
+        <div class="intel-footnote">
+
+            <span>
+                Formal closure
+            </span>
+
+            <strong>
+                ${formatNumber(closure)}
+                (${formatPercentage(formalClosure.rate)})
+            </strong>
+
+        </div>
+
+    `;
+
+    animateFills(container);
+}
+/*
+====================================================
+RISK ACCEPTANCE
+====================================================
+*/
+
+function renderRiskAcceptance(data) {
+
+    const container =
+        getElement("risk-acceptance-container");
+
+    if (!container) {
+        return;
+    }
+
+    const riskAcceptance =
+        data?.riskAcceptance ||
+        data?.securityIntelligence?.riskAcceptance;
+
+    if (!riskAcceptance) {
+        container.innerHTML =
+            emptyState("No risk acceptance data available.");
+
+        return;
+    }
+
+    const total =
+        Number(riskAcceptance.totalRiskAccepted ?? 0);
+
+    const highRisk =
+        riskAcceptance.highRisk || {};
+
+    const aging =
+        riskAcceptance.aging || {};
+
+    const severity =
+        riskAcceptance.severity || {};
+
+    const concentration =
+        riskAcceptance.concentration || {};
+
+    const topPatterns =
+        Array.isArray(concentration.topAlertPatterns)
+            ? concentration.topAlertPatterns
+            : [];
+
+    const topOwners =
+        Array.isArray(concentration.topOwners)
+            ? concentration.topOwners
+            : [];
+
+    const agingBuckets =
+        aging.buckets || {};
+
+    const severityEntries = [
+        {
+            label: "Critical",
+            value: Number(severity.critical ?? 0),
+            tone: "red"
+        },
+        {
+            label: "High",
+            value: Number(severity.high ?? 0),
+            tone: "red"
+        },
+        {
+            label: "Medium",
+            value: Number(severity.medium ?? 0),
+            tone: "amber"
+        },
+        {
+            label: "Low",
+            value: Number(severity.low ?? 0),
+            tone: "green"
+        }
+    ].filter(item => item.value > 0);
+
+    const maxSeverity =
+        Math.max(
+            ...severityEntries.map(item => item.value),
+            1
+        );
+
+    container.innerHTML = `
+
+        <!-- HERO METRICS -->
+
+        <div class="risk-hero">
+
+            <div class="risk-total">
+
+                <span>
+                    Total risk accepted
+                </span>
+
+                <strong>
+                    ${formatNumber(total)}
+                </strong>
+
+            </div>
+
+            <div class="risk-high">
+
+                <span>
+                    High / Critical
+                </span>
+
+                <strong>
+                    ${formatNumber(highRisk.total ?? 0)}
+                </strong>
+
+                <small>
+                    ${formatPercentage(highRisk.rate)}
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- AGING -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Acceptance aging
+            </div>
+
+            <div class="aging-metrics">
+
+                <div>
+                    <span>Average age</span>
+                    <strong>
+                        ${Number(aging.averageDays ?? 0).toFixed(1)}d
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Oldest</span>
+                    <strong>
+                        ${Number(aging.oldestDays ?? 0).toFixed(1)}d
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Over 30d</span>
+                    <strong>
+                        ${formatNumber(aging.over30Days ?? 0)}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Over 90d</span>
+                    <strong>
+                        ${formatNumber(aging.over90Days ?? 0)}
+                    </strong>
+                </div>
+
+            </div>
+
+
+            <div class="aging-buckets">
+
+                ${[
+            ["0-7", agingBuckets["0-7"] ?? 0],
+            ["8-30", agingBuckets["8-30"] ?? 0],
+            ["31-90", agingBuckets["31-90"] ?? 0],
+            ["90+", agingBuckets["90+"] ?? 0]
+        ].map(([label, value]) => `
+                    <div class="aging-bucket">
+
+                        <span>${escapeHTML(label)} days</span>
+
+                        <strong>
+                            ${formatNumber(value)}
+                        </strong>
+
+                    </div>
+                `).join("")}
+
+            </div>
+
+        </div>
+
+
+        <!-- SEVERITY -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Accepted risk by severity
+            </div>
+
+            ${severityEntries.length
+            ? severityEntries.map((item, index) => {
+
+                const width =
+                    Math.max(
+                        4,
+                        Math.min(
+                            100,
+                            (item.value / maxSeverity) * 100
+                        )
+                    );
+
+                return `
+                            <div
+                                class="intel-bar-row row-anim"
+                                style="${rowDelay(index, 35)}"
+                            >
+                                <span class="intel-bar-label">
+                                    ${escapeHTML(item.label)}
+                                </span>
+
+                                <div class="intel-bar-track">
+                                    <div
+                                        class="intel-bar-fill tone-${item.tone}"
+                                        style="width:${width}%"
+                                    ></div>
+                                </div>
+
+                                <span class="intel-bar-value">
+                                    ${formatNumber(item.value)}
+                                </span>
+                            </div>
+                        `;
+
+            }).join("")
+
+            : `
+                        <div class="intel-empty-inline">
+                            No severity data available.
+                        </div>
+                    `
+        }
+
+        </div>
+
+
+        <!-- CONCENTRATION -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Top accepted-risk patterns
+            </div>
+
+            <div class="risk-list">
+
+                ${topPatterns.length
+            ? topPatterns.slice(0, 5).map((item, index) => `
+                            <div
+                                class="risk-list-row row-anim"
+                                style="${rowDelay(index, 35)}"
+                            >
+                                <div class="risk-list-main">
+
+                                    <span class="risk-list-name"
+                                        title="${escapeHTML(item.name)}">
+                                        ${escapeHTML(item.name)}
+                                    </span>
+
+                                </div>
+
+                                <div class="risk-list-count">
+
+                                    <strong>
+                                        ${formatNumber(item.count)}
+                                    </strong>
+
+                                    <span>
+                                        ${formatPercentage(item.rate)}
+                                    </span>
+
+                                </div>
+
+                            </div>
+                        `).join("")
+
+            : `
+                            <div class="intel-empty-inline">
+                                No recurring patterns identified.
+                            </div>
+                        `
+        }
+
+            </div>
+
+        </div>
+
+
+        <!-- OWNERS -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Risk acceptance owners
+            </div>
+
+            <div class="risk-list">
+
+                ${topOwners.length
+            ? topOwners.slice(0, 5).map((item, index) => `
+                            <div
+                                class="risk-list-row row-anim"
+                                style="${rowDelay(index, 35)}"
+                            >
+                                <div class="risk-list-main">
+
+                                    <span class="risk-list-name"
+                                        title="${escapeHTML(item.name)}">
+                                        ${escapeHTML(item.name)}
+                                    </span>
+
+                                </div>
+
+                                <div class="risk-list-count">
+
+                                    <strong>
+                                        ${formatNumber(item.count)}
+                                    </strong>
+
+                                    <span>
+                                        ${formatPercentage(item.rate)}
+                                    </span>
+
+                                </div>
+
+                            </div>
+                        `).join("")
+
+            : `
+                            <div class="intel-empty-inline">
+                                No owner concentration data available.
+                            </div>
+                        `
+        }
+
+            </div>
+
+        </div>
+
+    `;
+
+    animateFills(container);
+}
 /*
 ====================================================
 ALERT BREAKDOWN
@@ -985,6 +1633,8 @@ function showPageError(message) {
         "queue-container",
         "comparison-container",
         "lifecycle-container",
+        "case-outcome-container",
+        "risk-acceptance-container",
         "alert-breakdown",
         "report-container"
     ];
