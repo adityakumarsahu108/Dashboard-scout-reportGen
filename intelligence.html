@@ -1621,11 +1621,52 @@
                 animation: none !important;
             }
         }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--surface);
+            color: var(--text-secondary);
+            box-shadow: var(--shadow-xs);
+            transition: background 160ms ease, border-color 160ms ease,
+                color 160ms ease, transform 160ms ease;
+        }
+
+        .back-button:hover {
+            background: var(--signal-soft);
+            border-color: var(--signal-line);
+            color: var(--signal-dark);
+        }
+
+        .back-button:active {
+            transform: scale(0.94);
+        }
+
+        .back-button svg {
+            transition: transform 160ms ease;
+        }
+
+        .back-button:hover svg {
+            transform: translateX(-1px);
+        }
     </style>
 </head>
 
 
 <body>
+
 
     <div class="page">
 
@@ -1636,7 +1677,15 @@
         <header class="topbar">
 
             <div class="brand">
+                <button class="back-button" onclick="window.location.href='index.html'" title="Back to dashboard">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5">
+                        <path d="M15 18l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+
                 <div class="brand-mark"></div>
+
                 <div class="brand-text">
                     <div class="eyebrow">Scout Motors &middot; DLP Monitoring</div>
                     <h1>Security Intelligence</h1>
@@ -1644,7 +1693,6 @@
             </div>
 
             <div class="topbar-actions">
-
                 <div class="live-pill">
                     <span id="live-dot" class="live-dot"></span>
                     <span id="live-label">Connecting&hellip;</span>
@@ -1655,7 +1703,6 @@
                     <span>Refresh</span>
                     <span class="kbd-hint">R</span>
                 </button>
-
             </div>
 
         </header>

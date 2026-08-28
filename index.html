@@ -114,10 +114,12 @@
                 <button class="nav-item" data-page="intelligence" type="button">
 
                     <span class="nav-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M9.5 3a3.5 3.5 0 0 0-3.5 3.5A3.5 3.5 0 0 0 3 10a3.5 3.5 0 0 0 3 3.45V15a3 3 0 0 0 3 3h1v3" />
-                            <path d="M14.5 3A3.5 3.5 0 0 1 18 6.5a3.5 3.5 0 0 1 3 3.5 3.5 3.5 0 0 1-3 3.45V15a3 3 0 0 1-3 3h-1v3" />
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M9.5 3a3.5 3.5 0 0 0-3.5 3.5A3.5 3.5 0 0 0 3 10a3.5 3.5 0 0 0 3 3.45V15a3 3 0 0 0 3 3h1v3" />
+                            <path
+                                d="M14.5 3A3.5 3.5 0 0 1 18 6.5a3.5 3.5 0 0 1 3 3.5 3.5 3.5 0 0 1-3 3.45V15a3 3 0 0 1-3 3h-1v3" />
                             <path d="M8 8h.01M16 8h.01M7 12h.01M17 12h.01M12 6v2M12 16v2" />
                         </svg>
                     </span>
@@ -1153,7 +1155,7 @@
                      intelligence.html remains independent.
                 ================================== -->
 
-                <div class="page hidden" id="intelligence-page">
+                <!-- <div class="page hidden" id="intelligence-page">
 
                     <iframe
                         id="intelligence-frame"
@@ -1162,7 +1164,7 @@
                         loading="eager">
                     </iframe>
 
-                </div>
+                </div> -->
 
             </section>
 
@@ -1313,27 +1315,7 @@
             }
 
             function showIntelligence() {
-                hideAllPages();
-
-                document.getElementById("topbar").style.display = "none";
-
-                if (pages.intelligence) {
-                    pages.intelligence.classList.remove("hidden");
-                }
-
-                if (reportExplorer) {
-                    reportExplorer.style.display = "none";
-                }
-
-                if (alertModal) {
-                    alertModal.style.display = "none";
-                }
-
-                // document.getElementById("page-title").textContent =
-                //     "Security Intelligence";
-
-                // document.getElementById("page-description").textContent =
-                //     "AI-powered security intelligence and risk summary";
+                window.location.href = "intelligence.html";
             }
 
             navItems.forEach(function (item) {
