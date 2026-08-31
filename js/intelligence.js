@@ -419,6 +419,8 @@ function renderIntelligence(data) {
     renderCaseOutcome(data);
     renderRiskAcceptance(data);
     renderAlertBreakdown(data);
+    renderWorkload(data);
+    renderDisposition(data);
     renderReport(data);
     renderGeneratedAt(data);
 
@@ -1434,6 +1436,432 @@ function renderRiskAcceptance(data) {
                             </div>
                         `
         }
+
+            </div>
+
+        </div>
+
+    `;
+
+    animateFills(container);
+}
+
+/*
+====================================================
+ANALYST WORKLOAD  (cyeraWorkIntelligence)
+====================================================
+Reads data.cyeraWorkIntelligence and renders into
+#workload-container / #workload-meta.
+*/
+
+function renderWorkload(data) {
+
+    const container =
+        getElement("workload-container");
+
+    if (!container) {
+        return;
+    }
+
+    const work =
+        data?.cyeraWorkIntelligence;
+
+    const meta =
+        getElement("workload-meta");
+
+    if (!work) {
+        container.innerHTML =
+            emptyState("No workload data available.");
+
+        if (meta) {
+            meta.textContent = "";
+        }
+
+        return;
+    }
+
+    if (meta) {
+        meta.textContent = work.reportId || "";
+    }
+
+    const workload =
+        work.workload || {};
+
+    const workState =
+        work.workState || {};
+
+    const severity =
+        work.severity || {};
+
+    const analystActivity =
+        Array.isArray(work.analystActivity)
+            ? [...work.analystActivity].sort(
+                (a, b) => (b.handledActions ?? 0) - (a.handledActions ?? 0)
+            )
+            : [];
+
+    const summary =
+        work.analystActivitySummary || {};
+
+    // Work state buckets, each mapped to a bar tone
+    const stateEntries = [
+        { label: "Unassigned (open)", value: Number(workState.openUnassigned ?? 0), tone: "amber" },
+        { label: "In progress", value: Number(workState.inProgress ?? 0), tone: "blue" },
+        { label: "Assigned (open)", value: Number(workState.openAssigned ?? 0), tone: "amber" },
+        { label: "High-risk unassigned", value: Number(workState.highRiskUnassigned ?? 0), tone: "red" },
+        { label: "High-risk assigned", value: Number(workState.highRiskAssigned ?? 0), tone: "red" },
+        { label: "Handled", value: Number(workState.handled ?? 0), tone: "green" },
+        { label: "Other", value: Number(workState.other ?? 0), tone: "grey" }
+    ].filter(item => item.value > 0);
+
+    const maxState =
+        Math.max(...stateEntries.map(item => item.value), 1);
+
+    const severityEntries = [
+        { label: "Critical", value: Number(severity.critical ?? 0), tone: "red" },
+        { label: "High", value: Number(severity.high ?? 0), tone: "red" },
+        { label: "Medium", value: Number(severity.medium ?? 0), tone: "amber" },
+        { label: "Low", value: Number(severity.low ?? 0), tone: "green" },
+        { label: "Unknown", value: Number(severity.unknown ?? 0), tone: "grey" }
+    ].filter(item => item.value > 0);
+
+    const maxSeverity =
+        Math.max(...severityEntries.map(item => item.value), 1);
+
+    container.innerHTML = `
+
+        <!-- SUMMARY TILES -->
+
+        <div class="intel-summary-grid">
+
+            <div class="intel-stat">
+                <span>Active</span>
+                <strong>${formatNumber(workload.active ?? 0)}</strong>
+            </div>
+
+            <div class="intel-stat">
+                <span>Handled</span>
+                <strong>${formatNumber(workload.handled ?? 0)}</strong>
+                <small>${Number(workload.handledRate ?? 0).toFixed(1)}% of total</small>
+            </div>
+
+            <div class="intel-stat">
+                <span>Unassigned</span>
+                <strong class="accent-amber">${formatNumber(workload.unassigned ?? 0)}</strong>
+                <small>${Number(workload.unassignedRate ?? 0).toFixed(1)}% of total</small>
+            </div>
+
+            <div class="intel-stat">
+                <span>High-Risk Open</span>
+                <strong class="accent-blue">${formatNumber(workload.highRiskOpen ?? 0)}</strong>
+            </div>
+
+        </div>
+
+
+        <!-- WORK STATE -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Work state
+            </div>
+
+            ${
+                stateEntries.length
+                    ? `<div class="intel-bars">${
+                        stateEntries.map((item, index) => {
+
+                            const width =
+                                Math.max(4, Math.min(100, (item.value / maxState) * 100));
+
+                            return `
+                                <div class="intel-bar-row row-anim" style="${rowDelay(index, 35)}">
+                                    <span class="intel-bar-label">${escapeHTML(item.label)}</span>
+                                    <div class="intel-bar-track">
+                                        <div class="intel-bar-fill tone-${item.tone}" style="width:${width}%"></div>
+                                    </div>
+                                    <span class="intel-bar-value">${formatNumber(item.value)}</span>
+                                </div>
+                            `;
+
+                        }).join("")
+                    }</div>`
+                    : `<div class="intel-empty-inline">No open work items.</div>`
+            }
+
+        </div>
+
+
+        <!-- SEVERITY MIX -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Severity mix
+            </div>
+
+            ${
+                severityEntries.length
+                    ? `<div class="intel-bars">${
+                        severityEntries.map((item, index) => {
+
+                            const width =
+                                Math.max(4, Math.min(100, (item.value / maxSeverity) * 100));
+
+                            return `
+                                <div class="intel-bar-row row-anim" style="${rowDelay(index, 35)}">
+                                    <span class="intel-bar-label">${escapeHTML(item.label)}</span>
+                                    <div class="intel-bar-track">
+                                        <div class="intel-bar-fill tone-${item.tone}" style="width:${width}%"></div>
+                                    </div>
+                                    <span class="intel-bar-value">${formatNumber(item.value)}</span>
+                                </div>
+                            `;
+
+                        }).join("")
+                    }</div>`
+                    : `<div class="intel-empty-inline">No severity data available.</div>`
+            }
+
+        </div>
+
+
+        <!-- ANALYST ACTIVITY -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Analyst activity
+            </div>
+
+            ${
+                analystActivity.length
+                    ? `
+                        <div class="case-severity-table">
+
+                            <div class="case-severity-header">
+                                <span>Analyst</span>
+                                <span>Handled</span>
+                                <span>Accepted / FP</span>
+                            </div>
+
+                            ${
+                                analystActivity.map((item, index) => `
+                                    <div class="case-severity-row row-anim" style="${rowDelay(index, 35)}">
+                                        <span class="case-severity-name" title="${escapeHTML(item.analyst)}">
+                                            ${escapeHTML(item.analyst)}
+                                        </span>
+                                        <span class="case-severity-value">
+                                            ${formatNumber(item.handledActions ?? 0)}
+                                        </span>
+                                        <span class="case-severity-value">
+                                            ${formatNumber(item.riskAcceptedActions ?? 0)} / ${formatNumber(item.falsePositiveActions ?? 0)}
+                                        </span>
+                                    </div>
+                                `).join("")
+                            }
+
+                        </div>
+                    `
+                    : `<div class="intel-empty-inline">No analyst activity recorded.</div>`
+            }
+
+        </div>
+
+
+        <!-- SUMMARY FOOTNOTE -->
+
+        <div class="intel-footnote">
+            <span>${formatNumber(summary.analysts ?? 0)} analysts</span>
+            <strong>${formatNumber(summary.totalHandledActions ?? 0)} handled actions</strong>
+        </div>
+
+    `;
+
+    animateFills(container);
+}
+
+
+/*
+====================================================
+CASE DISPOSITION  (cyeraDispositionIntelligence)
+====================================================
+Reads data.cyeraDispositionIntelligence and renders
+into #disposition-container / #disposition-meta.
+*/
+
+function renderDisposition(data) {
+
+    const container =
+        getElement("disposition-container");
+
+    if (!container) {
+        return;
+    }
+
+    const intel =
+        data?.cyeraDispositionIntelligence;
+
+    const meta =
+        getElement("disposition-meta");
+
+    if (!intel) {
+        container.innerHTML =
+            emptyState("No disposition data available.");
+
+        return;
+    }
+
+    if (meta) {
+        meta.textContent = intel.reportId || "Cyera";
+    }
+
+    const disposition =
+        intel.disposition || {};
+
+    const highRisk =
+        intel.highRiskOutcome || {};
+
+    const analystOutcomes =
+        Array.isArray(intel.analystOutcomes)
+            ? [...intel.analystOutcomes].sort(
+                (a, b) => (b.totalHandled ?? 0) - (a.totalHandled ?? 0)
+            )
+            : [];
+
+    const importantAlerts =
+        Array.isArray(intel.importantAlerts)
+            ? intel.importantAlerts
+            : [];
+
+    const dispositionEntries = [
+        { label: "Risk accepted", value: Number(disposition.riskAccepted ?? 0), tone: "grey" },
+        { label: "False positive", value: Number(disposition.falsePositive ?? 0), tone: "green" },
+        { label: "Resolved / closed", value: Number(disposition.resolvedOrClosed ?? 0), tone: "green" },
+        { label: "In progress", value: Number(disposition.inProgress ?? 0), tone: "blue" },
+        { label: "Open", value: Number(disposition.open ?? 0), tone: "amber" }
+    ].filter(item => item.value > 0);
+
+    const maxDisposition =
+        Math.max(...dispositionEntries.map(item => item.value), 1);
+
+    container.innerHTML = `
+
+        <!-- HERO: total vs high-risk outcome -->
+
+        <div class="risk-hero">
+
+            <div class="risk-total">
+                <span>Total cases</span>
+                <strong>${formatNumber(disposition.total ?? 0)}</strong>
+            </div>
+
+            <div class="risk-high">
+                <span>High / critical</span>
+                <strong>${formatNumber(highRisk.total ?? 0)}</strong>
+                <small>${formatNumber(highRisk.riskAccepted ?? 0)} accepted &middot; ${formatNumber(highRisk.openUnassigned ?? 0)} unassigned</small>
+            </div>
+
+        </div>
+
+
+        <!-- DISPOSITION BREAKDOWN -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Disposition breakdown
+            </div>
+
+            ${
+                dispositionEntries.length
+                    ? `<div class="intel-bars">${
+                        dispositionEntries.map((item, index) => {
+
+                            const width =
+                                Math.max(4, Math.min(100, (item.value / maxDisposition) * 100));
+
+                            return `
+                                <div class="intel-bar-row row-anim" style="${rowDelay(index, 35)}">
+                                    <span class="intel-bar-label">${escapeHTML(item.label)}</span>
+                                    <div class="intel-bar-track">
+                                        <div class="intel-bar-fill tone-${item.tone}" style="width:${width}%"></div>
+                                    </div>
+                                    <span class="intel-bar-value">${formatNumber(item.value)}</span>
+                                </div>
+                            `;
+
+                        }).join("")
+                    }</div>`
+                    : `<div class="intel-empty-inline">No disposition data available.</div>`
+            }
+
+        </div>
+
+
+        <!-- TOP ANALYSTS -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Top analysts by cases handled
+            </div>
+
+            <div class="risk-list">
+
+                ${
+                    analystOutcomes.length
+                        ? analystOutcomes.slice(0, 5).map((item, index) => `
+                            <div class="risk-list-row row-anim" style="${rowDelay(index, 35)}">
+                                <div class="risk-list-main">
+                                    <span class="risk-list-name" title="${escapeHTML(item.analyst)}">
+                                        ${escapeHTML(item.analyst)}
+                                    </span>
+                                </div>
+                                <div class="risk-list-count">
+                                    <strong>${formatNumber(item.totalHandled ?? 0)}</strong>
+                                    <span>${formatNumber(item.riskAccepted ?? 0)} accepted</span>
+                                </div>
+                            </div>
+                        `).join("")
+                        : `<div class="intel-empty-inline">No analyst outcomes recorded.</div>`
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- NOTABLE ALERTS -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Notable alerts
+            </div>
+
+            <div class="risk-list">
+
+                ${
+                    importantAlerts.length
+                        ? importantAlerts.slice(0, 6).map((item, index) => `
+                            <div class="risk-list-row row-anim" style="${rowDelay(index, 35)}">
+                                <div class="risk-list-main">
+                                    <div class="queue-name-row">
+                                        <span class="sev-dot sev-${(item.severity || "unknown").toLowerCase()}"></span>
+                                        <span class="risk-list-name" title="${escapeHTML(item.name)}">
+                                            ${escapeHTML(item.name)}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="risk-list-count">
+                                    <span class="chip chip-status">${escapeHTML(item.status || "—")}</span>
+                                </div>
+                            </div>
+                        `).join("")
+                        : `<div class="intel-empty-inline">No notable alerts this report.</div>`
+                }
 
             </div>
 

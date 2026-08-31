@@ -1637,17 +1637,16 @@
             flex-shrink: 0;
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
-            background: var(--surface);
+            background: var(--bg-raised);
             color: var(--text-secondary);
-            box-shadow: var(--shadow-xs);
             transition: background 160ms ease, border-color 160ms ease,
                 color 160ms ease, transform 160ms ease;
         }
 
         .back-button:hover {
-            background: var(--signal-soft);
-            border-color: var(--signal-line);
-            color: var(--signal-dark);
+            background: var(--blue-dim);
+            border-color: var(--blue);
+            color: var(--blue);
         }
 
         .back-button:active {
@@ -1802,6 +1801,29 @@
                     </div>
                 </section>
 
+
+                <!-- ============================================
+         ANALYST WORKLOAD  (cyeraWorkIntelligence)
+    ============================================= -->
+
+                <section class="panel">
+
+                    <div class="panel-head">
+                        <div class="panel-title">
+                            Analyst Workload
+                        </div>
+                        <div class="panel-meta" id="workload-meta"></div>
+                    </div>
+
+                    <div id="workload-container">
+                        <div class="skel skel-line" style="width:70%;"></div>
+                        <div class="skel skel-row"></div>
+                        <div class="skel skel-row"></div>
+                        <div class="skel skel-row"></div>
+                    </div>
+
+                </section>
+
             </div>
 
 
@@ -1853,6 +1875,36 @@
 
                     <div id="case-outcome-container">
 
+                        <div class="skel skel-row"></div>
+                        <div class="skel skel-row"></div>
+                        <div class="skel skel-row"></div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- ============================================
+         CASE DISPOSITION  (cyeraDispositionIntelligence)
+    ============================================= -->
+
+                <section class="panel">
+
+                    <div class="panel-head">
+
+                        <div class="panel-title">
+                            Case Disposition
+                        </div>
+
+                        <div class="panel-meta" id="disposition-meta">
+                            Cyera
+                        </div>
+
+                    </div>
+
+                    <div id="disposition-container">
+
+                        <div class="skel skel-line" style="width:70%;"></div>
                         <div class="skel skel-row"></div>
                         <div class="skel skel-row"></div>
                         <div class="skel skel-row"></div>
