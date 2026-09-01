@@ -419,6 +419,7 @@ function renderIntelligence(data) {
     renderCaseOutcome(data);
     renderRiskAcceptance(data);
     renderAlertBreakdown(data);
+    renderCyeraOperationalIntelligence(data);
     renderWorkload(data);
     renderDisposition(data);
     renderReport(data);
@@ -1446,6 +1447,660 @@ function renderRiskAcceptance(data) {
     animateFills(container);
 }
 
+
+/*
+====================================================
+CYERA OPERATIONAL INTELLIGENCE
+(cyeraOperationalIntelligence)
+====================================================
+Reads data.cyeraOperationalIntelligence and renders
+into #operational-intelligence-container /
+#operational-intelligence-meta.
+
+This represents the CURRENT Cyera environment state,
+not the number of alerts contained in the latest report.
+====================================================
+*/
+
+function renderCyeraOperationalIntelligence(data) {
+
+    const container =
+        getElement("operational-intelligence-container");
+
+    if (!container) {
+        return;
+    }
+
+    const intel =
+        data?.cyeraOperationalIntelligence;
+
+    const meta =
+        getElement("operational-intelligence-meta");
+
+    if (!intel) {
+
+        container.innerHTML =
+            emptyState(
+                "No Cyera operational intelligence available."
+            );
+
+        if (meta) {
+            meta.textContent = "";
+        }
+
+        return;
+    }
+
+
+    /*
+    ====================================================
+    META
+    ====================================================
+    */
+
+    if (meta) {
+
+        const asOfReport =
+            intel.asOfReport ||
+            intel.reportId ||
+            "";
+
+        meta.textContent =
+            asOfReport
+                ? `As of ${asOfReport}`
+                : "Current Cyera state";
+    }
+
+
+    /*
+    ====================================================
+    CURRENT STATE
+    ====================================================
+    */
+
+    const current =
+        intel.currentState || {};
+
+
+    const total =
+        Number(current.totalAlerts ?? 0);
+
+    const open =
+        Number(current.open ?? 0);
+
+    const inProgress =
+        Number(current.inProgress ?? 0);
+
+    const handled =
+        Number(current.handled ?? 0);
+
+    const unassigned =
+        Number(current.unassigned ?? 0);
+
+    const handledRate =
+        Number(current.handledRate ?? 0);
+
+    const unassignedRate =
+        Number(current.unassignedRate ?? 0);
+
+    const highRiskActive =
+        Number(current.highRiskActive ?? 0);
+
+    const highRiskUnassigned =
+        Number(current.highRiskUnassigned ?? 0);
+
+
+    /*
+    ====================================================
+    HIGH / CRITICAL OUTCOME
+    ====================================================
+    */
+
+    const highRisk =
+        intel.highRiskOutcome || {};
+
+    const highRiskTotal =
+        Number(highRisk.total ?? 0);
+
+    const critical =
+        Number(highRisk.critical ?? 0);
+
+    const high =
+        Number(highRisk.high ?? 0);
+
+    const riskAccepted =
+        Number(highRisk.riskAccepted ?? 0);
+
+    const falsePositive =
+        Number(highRisk.falsePositive ?? 0);
+
+    const resolvedOrClosed =
+        Number(highRisk.resolvedOrClosed ?? 0);
+
+    const highRiskInProgress =
+        Number(highRisk.inProgress ?? 0);
+
+    const highRiskOpen =
+        Number(highRisk.open ?? 0);
+
+    const highRiskOpenUnassigned =
+        Number(highRisk.openUnassigned ?? 0);
+
+    const criticalRiskAccepted =
+        Number(highRisk.criticalRiskAccepted ?? 0);
+
+    const highRiskAccepted =
+        Number(highRisk.highRiskAccepted ?? 0);
+
+
+    /*
+    ====================================================
+    ANALYST ACTIVITY
+    ====================================================
+    */
+
+    const analysts =
+        Array.isArray(intel.analystActivity)
+            ? [...intel.analystActivity].sort(
+                (a, b) =>
+                    Number(b.handledActions ?? 0) -
+                    Number(a.handledActions ?? 0)
+            )
+            : [];
+
+    const analystSummary =
+        intel.analystActivitySummary || {};
+
+
+    /*
+    ====================================================
+    WORK STATE
+    ====================================================
+    */
+
+    const workStateEntries = [
+
+        {
+            label: "Open / unassigned",
+            value: unassigned,
+            tone: "amber"
+        },
+
+        {
+            label: "In progress",
+            value: inProgress,
+            tone: "blue"
+        },
+
+        {
+            label: "Handled",
+            value: handled,
+            tone: "green"
+        }
+
+    ].filter(
+        item => item.value > 0
+    );
+
+
+    const maxWorkState =
+        Math.max(
+            ...workStateEntries.map(
+                item => item.value
+            ),
+            1
+        );
+
+
+    /*
+    ====================================================
+    HIGH-RISK OUTCOME BARS
+    ====================================================
+    */
+
+    const highRiskEntries = [
+
+        {
+            label: "Risk accepted",
+            value: riskAccepted,
+            tone: "blue"
+        },
+
+        {
+            label: "False positive",
+            value: falsePositive,
+            tone: "green"
+        },
+
+        {
+            label: "In progress",
+            value: highRiskInProgress,
+            tone: "amber"
+        },
+
+        {
+            label: "Resolved / closed",
+            value: resolvedOrClosed,
+            tone: "green"
+        },
+
+        {
+            label: "Open",
+            value: highRiskOpen,
+            tone: "red"
+        }
+
+    ].filter(
+        item => item.value > 0
+    );
+
+
+    const maxHighRisk =
+        Math.max(
+            ...highRiskEntries.map(
+                item => item.value
+            ),
+            1
+        );
+
+
+    /*
+    ====================================================
+    RENDER
+    ====================================================
+    */
+
+    container.innerHTML = `
+
+        <!-- CURRENT STATE SUMMARY -->
+
+        <div class="intel-summary-grid">
+
+            <div class="intel-stat">
+
+                <span>Total Cyera alerts</span>
+
+                <strong>
+                    ${formatNumber(total)}
+                </strong>
+
+            </div>
+
+
+            <div class="intel-stat">
+
+                <span>Open</span>
+
+                <strong class="accent-amber">
+                    ${formatNumber(open)}
+                </strong>
+
+            </div>
+
+
+            <div class="intel-stat">
+
+                <span>Handled</span>
+
+                <strong>
+                    ${formatNumber(handled)}
+                </strong>
+
+                <small>
+                    ${formatPercentage(handledRate)}
+                    of current state
+                </small>
+
+            </div>
+
+
+            <div class="intel-stat">
+
+                <span>Unassigned</span>
+
+                <strong class="accent-amber">
+                    ${formatNumber(unassigned)}
+                </strong>
+
+                <small>
+                    ${formatPercentage(unassignedRate)}
+                    of current state
+                </small>
+
+            </div>
+
+
+            <div class="intel-stat">
+
+                <span>High / critical active</span>
+
+                <strong
+                    class="${highRiskActive > 0
+                        ? "accent-amber"
+                        : ""}"
+                >
+                    ${formatNumber(highRiskActive)}
+                </strong>
+
+            </div>
+
+
+            <div class="intel-stat">
+
+                <span>High-risk unassigned</span>
+
+                <strong
+                    class="${highRiskUnassigned > 0
+                        ? "accent-red"
+                        : ""}"
+                >
+                    ${formatNumber(highRiskUnassigned)}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <!-- WORK STATE -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Current work state
+            </div>
+
+            <div class="intel-bars">
+
+                ${
+                    workStateEntries.length
+
+                        ? workStateEntries
+                            .map((item, index) => {
+
+                                const width =
+                                    Math.max(
+                                        4,
+                                        Math.min(
+                                            100,
+                                            (item.value /
+                                                maxWorkState) *
+                                            100
+                                        )
+                                    );
+
+                                return `
+
+                                    <div
+                                        class="intel-bar-row row-anim"
+                                        style="${rowDelay(index, 35)}"
+                                    >
+
+                                        <span class="intel-bar-label">
+                                            ${escapeHTML(item.label)}
+                                        </span>
+
+                                        <div class="intel-bar-track">
+
+                                            <div
+                                                class="intel-bar-fill tone-${item.tone}"
+                                                style="width:${width}%"
+                                            ></div>
+
+                                        </div>
+
+                                        <span class="intel-bar-value">
+                                            ${formatNumber(item.value)}
+                                        </span>
+
+                                    </div>
+
+                                `;
+
+                            })
+                            .join("")
+
+                        : `
+                            <div class="intel-empty-inline">
+                                No active work state data available.
+                            </div>
+                        `
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- HIGH / CRITICAL -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                High / critical outcomes
+            </div>
+
+
+            <div class="risk-hero">
+
+                <div class="risk-total">
+
+                    <span>
+                        High / critical
+                    </span>
+
+                    <strong>
+                        ${formatNumber(highRiskTotal)}
+                    </strong>
+
+                    <small>
+                        ${formatNumber(critical)} critical
+                        &middot;
+                        ${formatNumber(high)} high
+                    </small>
+
+                </div>
+
+
+                <div class="risk-high">
+
+                    <span>
+                        Reviewed
+                    </span>
+
+                    <strong>
+                        ${formatNumber(
+                            riskAccepted +
+                            falsePositive +
+                            resolvedOrClosed
+                        )}
+                    </strong>
+
+                    <small>
+                        ${formatNumber(criticalRiskAccepted)}
+                        critical accepted
+                        &middot;
+                        ${formatNumber(highRiskAccepted)}
+                        high accepted
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <div
+                class="intel-bars"
+                style="margin-top:14px;"
+            >
+
+                ${
+                    highRiskEntries.length
+
+                        ? highRiskEntries
+                            .map((item, index) => {
+
+                                const width =
+                                    Math.max(
+                                        4,
+                                        Math.min(
+                                            100,
+                                            (item.value /
+                                                maxHighRisk) *
+                                            100
+                                        )
+                                    );
+
+                                return `
+
+                                    <div
+                                        class="intel-bar-row row-anim"
+                                        style="${rowDelay(index, 35)}"
+                                    >
+
+                                        <span class="intel-bar-label">
+                                            ${escapeHTML(item.label)}
+                                        </span>
+
+                                        <div class="intel-bar-track">
+
+                                            <div
+                                                class="intel-bar-fill tone-${item.tone}"
+                                                style="width:${width}%"
+                                            ></div>
+
+                                        </div>
+
+                                        <span class="intel-bar-value">
+                                            ${formatNumber(item.value)}
+                                        </span>
+
+                                    </div>
+
+                                `;
+
+                            })
+                            .join("")
+
+                        : `
+                            <div class="intel-empty-inline">
+                                No high-risk outcome data available.
+                            </div>
+                        `
+                }
+
+            </div>
+
+        </div>
+
+
+        <!-- ANALYST ACTIVITY -->
+
+        <div class="intel-subsection">
+
+            <div class="intel-subsection-title">
+                Analyst activity
+            </div>
+
+
+            ${
+                analysts.length
+
+                    ? `
+
+                        <div class="case-severity-table">
+
+                            <div class="case-severity-header">
+
+                                <span>Analyst</span>
+
+                                <span>Handled</span>
+
+                                <span>Assignments</span>
+
+                            </div>
+
+
+                            ${
+                                analysts
+                                    .map((analyst, index) => `
+
+                                        <div
+                                            class="case-severity-row row-anim"
+                                            style="${rowDelay(index, 35)}"
+                                        >
+
+                                            <span
+                                                class="case-severity-name"
+                                                title="${escapeHTML(
+                                                    analyst.analyst || ""
+                                                )}"
+                                            >
+                                                ${escapeHTML(
+                                                    analyst.analyst ||
+                                                    "Unknown analyst"
+                                                )}
+                                            </span>
+
+
+                                            <span class="case-severity-value">
+                                                ${formatNumber(
+                                                    analyst.handledActions ?? 0
+                                                )}
+                                            </span>
+
+
+                                            <span class="case-severity-value">
+                                                ${formatNumber(
+                                                    analyst.assignmentActions ?? 0
+                                                )}
+                                            </span>
+
+                                        </div>
+
+                                    `)
+                                    .join("")
+                            }
+
+                        </div>
+
+                    `
+
+                    : `
+                        <div class="intel-empty-inline">
+                            No analyst activity recorded.
+                        </div>
+                    `
+            }
+
+        </div>
+
+
+        <!-- SUMMARY -->
+
+        <div class="intel-footnote">
+
+            <span>
+                ${formatNumber(
+                    analystSummary.analysts ?? analysts.length
+                )}
+                analysts
+            </span>
+
+            <strong>
+                ${formatNumber(
+                    analystSummary.totalHandledActions ?? 0
+                )}
+                handled actions
+            </strong>
+
+        </div>
+
+    `;
+
+
+    animateFills(container);
+}
 /*
 ====================================================
 ANALYST WORKLOAD  (cyeraWorkIntelligence)
