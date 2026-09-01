@@ -378,7 +378,7 @@
 
         .readout-cell {
             position: relative;
-            padding: 16px 18px;
+            padding: 12px 16px;
             border-right: 1px solid var(--border-soft);
             transition: background .15s var(--ease);
         }
@@ -393,16 +393,16 @@
 
         .readout-label {
             font-family: var(--font-mono);
-            font-size: 10.5px;
+            font-size: 10px;
             letter-spacing: .1em;
             text-transform: uppercase;
             color: var(--text-tertiary);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .readout-value {
             font-family: var(--font-mono);
-            font-size: 26px;
+            font-size: 21px;
             font-weight: 600;
             line-height: 1;
             color: var(--text-primary);
@@ -435,13 +435,13 @@
         }
 
         .readout-delta {
-            margin-top: 8px;
+            margin-top: 6px;
             font-family: var(--font-mono);
-            font-size: 11.5px;
+            font-size: 11px;
             display: flex;
             align-items: center;
             gap: 4px;
-            min-height: 15px;
+            min-height: 14px;
         }
 
         .readout-delta.up {
@@ -462,7 +462,7 @@
 
         .main-grid {
             display: grid;
-            grid-template-columns: minmax(0, 1.7fr) minmax(310px, 1fr);
+            grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
             gap: 20px;
             align-items: start;
         }
@@ -503,8 +503,6 @@
 
         /* ============================================
        ROW ENTRANCE ANIMATION
-       (applied via inline animation-delay from JS —
-       purely presentational, no data logic involved)
     ============================================ */
 
         .row-anim {
@@ -612,6 +610,51 @@
             font-size: 13.5px;
             line-height: 1.5;
             color: var(--text-primary);
+        }
+
+        /* ============================================
+       FINDINGS PROGRESSIVE DISCLOSURE
+       (default view shows a handful; rest are one click away
+        — same insights[] data, just not all dumped at once)
+    ============================================ */
+
+        .findings-wrap {
+            position: relative;
+        }
+
+        .findings-wrap:not(.expanded) #insights-container {
+            max-height: 268px;
+            overflow: hidden;
+        }
+
+        .findings-wrap:not(.expanded)::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 46px;
+            background: linear-gradient(to bottom, transparent, var(--bg-panel));
+            pointer-events: none;
+        }
+
+        .findings-toggle {
+            display: none;
+            width: 100%;
+            margin-top: 12px;
+            background: var(--bg-raised);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            letter-spacing: .04em;
+            padding: 8px;
+            transition: border-color .15s var(--ease), color .15s var(--ease);
+        }
+
+        .findings-toggle:hover {
+            color: var(--text-primary);
+            border-color: var(--border-strong);
         }
 
         /* ============================================
@@ -905,10 +948,6 @@
    SECURITY INTELLIGENCE EXTENSIONS
 ============================================ */
 
-        /* --------------------------------------------
-   GENERIC INTELLIGENCE METRICS
---------------------------------------------- */
-
         .intel-summary-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -957,15 +996,16 @@
             color: var(--blue);
         }
 
-
-        /* --------------------------------------------
-   SUBSECTIONS
---------------------------------------------- */
-
         .intel-subsection {
             margin-top: 18px;
             padding-top: 18px;
             border-top: 1px solid var(--border-soft);
+        }
+
+        .intel-subsection:first-child {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
         }
 
         .intel-subsection-title {
@@ -976,11 +1016,6 @@
             color: var(--text-tertiary);
             margin-bottom: 12px;
         }
-
-
-        /* --------------------------------------------
-   INTELLIGENCE BARS
---------------------------------------------- */
 
         .intel-bars {
             display: flex;
@@ -1041,11 +1076,6 @@
             font-variant-numeric: tabular-nums;
         }
 
-
-        /* --------------------------------------------
-   CASE SEVERITY TABLE
---------------------------------------------- */
-
         .case-severity-table {
             border: 1px solid var(--border);
             border-radius: var(--radius-sm);
@@ -1095,11 +1125,6 @@
             font-variant-numeric: tabular-nums;
         }
 
-
-        /* --------------------------------------------
-   CASE FOOTNOTE
---------------------------------------------- */
-
         .intel-footnote {
             display: flex;
             justify-content: space-between;
@@ -1115,11 +1140,6 @@
             font-family: var(--font-mono);
             color: var(--text-primary);
         }
-
-
-        /* --------------------------------------------
-   RISK ACCEPTANCE HERO
---------------------------------------------- */
 
         .risk-hero {
             display: grid;
@@ -1168,11 +1188,6 @@
             font-size: 10.5px;
             color: var(--text-secondary);
         }
-
-
-        /* --------------------------------------------
-   AGING METRICS
---------------------------------------------- */
 
         .aging-metrics {
             display: grid;
@@ -1230,11 +1245,6 @@
             font-size: 11px;
         }
 
-
-        /* --------------------------------------------
-   RISK LIST
---------------------------------------------- */
-
         .risk-list {
             display: flex;
             flex-direction: column;
@@ -1287,21 +1297,11 @@
             color: var(--text-tertiary);
         }
 
-
-        /* --------------------------------------------
-   INLINE EMPTY STATE
---------------------------------------------- */
-
         .intel-empty-inline {
             padding: 10px 0;
             font-size: 12px;
             color: var(--text-tertiary);
         }
-
-
-        /* --------------------------------------------
-   MOBILE
---------------------------------------------- */
 
         @media (max-width: 620px) {
 
@@ -1322,6 +1322,54 @@
                 grid-template-columns: repeat(2, 1fr);
             }
 
+        }
+
+        /* ============================================
+       CURRENT-STATE TABS
+       (merges Cyera Operational Intelligence, Case Outcomes,
+        Case Disposition, Risk Acceptance into one panel —
+        same containers/render functions, one visible at a time)
+    ============================================ */
+
+        .state-tabs {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-soft);
+            overflow-x: auto;
+        }
+
+        .state-tab {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            background: transparent;
+            border: none;
+            padding: 0 0 10px;
+            margin-right: 16px;
+            white-space: nowrap;
+            border-bottom: 2px solid transparent;
+            transition: color .15s var(--ease), border-color .15s var(--ease);
+        }
+
+        .state-tab:hover {
+            color: var(--text-secondary);
+        }
+
+        .state-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--blue);
+        }
+
+        .state-tab-panel {
+            display: none;
+        }
+
+        .state-tab-panel.active {
+            display: block;
+            animation: rise-in .25s var(--ease);
         }
 
         /* ============================================
@@ -1469,6 +1517,65 @@
         }
 
         /* ============================================
+       SECONDARY DETAILS PANEL (native <details>)
+       Lifecycle + Alert Breakdown + Report metadata —
+       collapsed by default, one click to expand.
+    ============================================ */
+
+        .details-panel {
+            margin-top: 20px;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .details-panel>summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: var(--font-display);
+            font-size: 13.5px;
+            font-weight: 600;
+        }
+
+        .details-panel>summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .details-panel>summary::after {
+            content: "\2304";
+            font-family: var(--font-mono);
+            color: var(--text-tertiary);
+            font-weight: 400;
+            font-size: 14px;
+            transition: transform .2s var(--ease);
+        }
+
+        .details-panel[open]>summary::after {
+            transform: rotate(180deg);
+        }
+
+        .details-panel-body {
+            padding: 4px 20px 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            border-top: 1px solid var(--border-soft);
+            padding-top: 18px;
+        }
+
+        .details-sub-title {
+            font-family: var(--font-mono);
+            font-size: 10.5px;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+            color: var(--text-tertiary);
+            margin-bottom: 12px;
+        }
+
+        /* ============================================
        EMPTY / ERROR STATES
     ============================================ */
 
@@ -1496,7 +1603,6 @@
 
         /* ============================================
        SKELETON LOADERS
-       (shown before first successful fetch)
     ============================================ */
 
         .skel {
@@ -1715,7 +1821,7 @@
 
 
         <!-- ============================================
-         READOUT STRIP
+         READOUT STRIP — above the fold, compact
     ============================================ -->
 
         <section class="readout-strip">
@@ -1758,6 +1864,9 @@
 
         <!-- ============================================
          MAIN GRID
+         Reading order = decision order:
+         1 needs attention · 3 work first · 6 high-risk cases  (left)
+         2 current state · 4 what changed · 5 analyst activity (right)
     ============================================ -->
 
         <div class="main-grid">
@@ -1765,18 +1874,25 @@
             <!-- LEFT COLUMN -->
             <div class="col">
 
+                <!-- SECTION 1 — WHAT NEEDS ATTENTION -->
                 <section class="panel">
                     <div class="panel-head">
                         <div class="panel-title">Intelligence Findings</div>
                         <div class="panel-meta" id="findings-meta"></div>
                     </div>
-                    <div id="insights-container">
-                        <div class="skel skel-line" style="width:70%;"></div>
-                        <div class="skel skel-line" style="width:92%;"></div>
-                        <div class="skel skel-line" style="width:55%;"></div>
+
+                    <div class="findings-wrap" id="findings-wrap">
+                        <div id="insights-container">
+                            <div class="skel skel-line" style="width:70%;"></div>
+                            <div class="skel skel-line" style="width:92%;"></div>
+                            <div class="skel skel-line" style="width:55%;"></div>
+                        </div>
                     </div>
+
+                    <button class="findings-toggle" id="findings-toggle" type="button">Show all findings</button>
                 </section>
 
+                <!-- SECTION 3 — WHAT TO WORK ON FIRST -->
                 <section class="panel">
                     <div class="panel-head">
                         <div class="panel-title">Priority Queue</div>
@@ -1789,6 +1905,77 @@
                     </div>
                 </section>
 
+                <!-- SECTION 6 — HIGH-RISK CASES -->
+                <section class="panel">
+                    <div class="panel-head">
+                        <div class="panel-title">High-Risk Cases</div>
+                        <div class="panel-meta">Notable alerts to know about</div>
+                    </div>
+                    <div id="highrisk-container">
+                        <div class="skel skel-row"></div>
+                        <div class="skel skel-row"></div>
+                        <div class="skel skel-row"></div>
+                    </div>
+                </section>
+
+            </div>
+
+
+            <!-- RIGHT COLUMN -->
+            <div class="col">
+
+                <!-- SECTION 2 — CURRENT SECURITY STATE
+                     Merges: Cyera Operational Intelligence, Case Outcomes,
+                     Case Disposition, Risk Acceptance. Same containers /
+                     render functions — only one tab visible at a time. -->
+                <section class="panel">
+
+                    <div class="panel-head">
+                        <div class="panel-title">Current Security State</div>
+                        <div class="panel-meta" id="operational-intelligence-meta"></div>
+                    </div>
+
+                    <div class="state-tabs">
+                        <button class="state-tab active" type="button" data-tab="cyera">Cyera State</button>
+                        <button class="state-tab" type="button" data-tab="outcomes">Case Outcomes</button>
+                        <button class="state-tab" type="button" data-tab="disposition">Disposition</button>
+                        <button class="state-tab" type="button" data-tab="risk">Risk Accepted</button>
+                    </div>
+
+                    <div class="state-tab-panel active" data-tab-panel="cyera">
+                        <div id="operational-intelligence-container">
+                            <div class="skel skel-line" style="width:70%;"></div>
+                            <div class="skel skel-row"></div>
+                            <div class="skel skel-row"></div>
+                        </div>
+                    </div>
+
+                    <div class="state-tab-panel" data-tab-panel="outcomes">
+                        <div id="case-outcome-container">
+                            <div class="skel skel-row"></div>
+                            <div class="skel skel-row"></div>
+                        </div>
+                    </div>
+
+                    <div class="state-tab-panel" data-tab-panel="disposition">
+                        <div class="panel-meta" id="disposition-meta" style="margin-bottom:12px;"></div>
+                        <div id="disposition-container">
+                            <div class="skel skel-line" style="width:70%;"></div>
+                            <div class="skel skel-row"></div>
+                            <div class="skel skel-row"></div>
+                        </div>
+                    </div>
+
+                    <div class="state-tab-panel" data-tab-panel="risk">
+                        <div id="risk-acceptance-container">
+                            <div class="skel skel-row"></div>
+                            <div class="skel skel-row"></div>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- SECTION 4 — WHAT CHANGED -->
                 <section class="panel">
                     <div class="panel-head">
                         <div class="panel-title">Report Comparison</div>
@@ -1801,251 +1988,67 @@
                     </div>
                 </section>
 
-
-                <!-- ============================================
-         ANALYST WORKLOAD  (cyeraWorkIntelligence)
-    ============================================= -->
-
+                <!-- SECTION 5 — WHO'S WORKING THE ALERTS -->
                 <section class="panel">
-
                     <div class="panel-head">
-                        <div class="panel-title">
-                            Analyst Workload
-                        </div>
+                        <div class="panel-title">Analyst Activity</div>
                         <div class="panel-meta" id="workload-meta"></div>
                     </div>
-
                     <div id="workload-container">
                         <div class="skel skel-line" style="width:70%;"></div>
                         <div class="skel skel-row"></div>
                         <div class="skel skel-row"></div>
-                        <div class="skel skel-row"></div>
                     </div>
-
-                </section>
-
-
-                <!-- ============================================
-         CYERA OPERATIONAL INTELLIGENCE
-    ============================================= -->
-
-                <section class="panel">
-
-                    <div class="panel-head">
-
-                        <div class="panel-title">
-                            Cyera Operational Intelligence
-                        </div>
-
-                        <div class="panel-meta" id="operational-intelligence-meta">
-                            Current Cyera state
-                        </div>
-
-                    </div>
-
-
-                    <div id="operational-intelligence-container">
-
-                        <div class="skel skel-line" style="width:70%;"></div>
-
-                        <div class="skel skel-row"></div>
-
-                        <div class="skel skel-row"></div>
-
-                        <div class="skel skel-row"></div>
-
-                    </div>
-
-                </section>
-
-
-            </div>
-
-
-            <!-- ============================================
-         RIGHT COLUMN
-    ============================================= -->
-
-            <div class="col">
-
-                <!-- ============================================
-         ALERT LIFECYCLE
-    ============================================= -->
-
-                <section class="panel">
-
-                    <div class="panel-head">
-                        <div class="panel-title">
-                            Alert Lifecycle
-                        </div>
-                    </div>
-
-                    <div id="lifecycle-container">
-
-                        <div class="skel skel-line" style="height:10px; border-radius:999px; margin-bottom:14px;"></div>
-
-                        <div class="skel skel-line" style="width:80%;"></div>
-
-                        <div class="skel skel-line" style="width:60%;"></div>
-
-                    </div>
-
-                </section>
-
-
-                <!-- ============================================
-         CASE OUTCOMES
-    ============================================= -->
-
-                <section class="panel">
-
-                    <div class="panel-head">
-
-                        <div class="panel-title">
-                            Case Outcomes
-                        </div>
-
-                        <div class="panel-meta">
-                            current report
-                        </div>
-
-                    </div>
-
-                    <div id="case-outcome-container">
-
-                        <div class="skel skel-row"></div>
-                        <div class="skel skel-row"></div>
-                        <div class="skel skel-row"></div>
-
-                    </div>
-
-                </section>
-
-
-                <!-- ============================================
-         CASE DISPOSITION  (cyeraDispositionIntelligence)
-    ============================================= -->
-
-                <section class="panel">
-
-                    <div class="panel-head">
-
-                        <div class="panel-title">
-                            Case Disposition
-                        </div>
-
-                        <div class="panel-meta" id="disposition-meta">
-                            Cyera
-                        </div>
-
-                    </div>
-
-                    <div id="disposition-container">
-
-                        <div class="skel skel-line" style="width:70%;"></div>
-                        <div class="skel skel-row"></div>
-                        <div class="skel skel-row"></div>
-                        <div class="skel skel-row"></div>
-
-                    </div>
-
-                </section>
-
-
-                <!-- ============================================
-         RISK ACCEPTANCE
-    ============================================= -->
-
-                <section class="panel">
-
-                    <div class="panel-head">
-
-                        <div class="panel-title">
-                            Risk Acceptance
-                        </div>
-
-                        <div class="panel-meta">
-                            accepted cases
-                        </div>
-
-                    </div>
-
-                    <div id="risk-acceptance-container">
-
-                        <div class="skel skel-row"></div>
-                        <div class="skel skel-row"></div>
-                        <div class="skel skel-row"></div>
-
-                    </div>
-
-                </section>
-
-
-                <!-- ============================================
-         ALERT BREAKDOWN
-    ============================================= -->
-
-                <section class="panel">
-
-                    <div class="panel-head">
-                        <div class="panel-title">
-                            Alert Breakdown
-                        </div>
-                    </div>
-
-                    <div id="alert-breakdown">
-
-                        <div class="skel skel-line" style="width:40%;"></div>
-
-                        <div class="skel skel-line" style="width:95%;"></div>
-
-                        <div class="skel skel-line" style="width:80%;"></div>
-
-                        <div class="skel skel-line" style="width:65%;"></div>
-
-                    </div>
-
-                </section>
-
-
- <!-- ============================================
-         LATEST REPORT
-    ============================================= -->
-
-                <section class="panel">
-
-                    <div class="panel-head">
-                        <div class="panel-title">
-                            Latest Report
-                        </div>
-                    </div>
-
-                    <div id="report-container">
-
-                        <div class="skel skel-row"></div>
-
-                    </div>
-
-                </section>
-
-
-                <!-- ============================================
-         GENERATED STATUS
-    ============================================= -->
-
-                <section class="panel">
-
-                    <div id="generated-container" class="status-footer">
-
-                        <div class="skel skel-line" style="width:60%;"></div>
-
-                    </div>
-
                 </section>
 
             </div>
 
         </div>
+
+
+        <!-- ============================================
+         SECONDARY / LOW-PRIORITY INFORMATION
+         Lifecycle, alert breakdown, and report metadata —
+         collapsed by default, one click away when needed.
+    ============================================= -->
+
+        <details class="panel details-panel">
+
+            <summary>More report detail — lifecycle, breakdown &amp; report metadata</summary>
+
+            <div class="details-panel-body">
+
+                <div>
+                    <div class="details-sub-title">Alert Lifecycle</div>
+                    <div id="lifecycle-container">
+                        <div class="skel skel-line" style="height:10px; border-radius:999px; margin-bottom:14px;"></div>
+                        <div class="skel skel-line" style="width:80%;"></div>
+                        <div class="skel skel-line" style="width:60%;"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="details-sub-title">Alert Breakdown</div>
+                    <div id="alert-breakdown">
+                        <div class="skel skel-line" style="width:40%;"></div>
+                        <div class="skel skel-line" style="width:95%;"></div>
+                        <div class="skel skel-line" style="width:80%;"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="details-sub-title">Latest Report</div>
+                    <div id="report-container">
+                        <div class="skel skel-row"></div>
+                    </div>
+                    <div id="generated-container" class="status-footer" style="margin-top:12px;">
+                        <div class="skel skel-line" style="width:60%;"></div>
+                    </div>
+                </div>
+
+            </div>
+
+        </details>
 
     </div>
 

@@ -422,6 +422,7 @@ function renderIntelligence(data) {
     renderCyeraOperationalIntelligence(data);
     renderWorkload(data);
     renderDisposition(data);
+    renderHighRiskCases(data);
     renderReport(data);
     renderGeneratedAt(data);
 
@@ -528,6 +529,8 @@ function renderFindings(data) {
 
     if (!insights.length) {
         container.innerHTML = emptyState("No intelligence findings were generated for this report.", { icon: "\u2713" });
+        const toggle = getElement("findings-toggle");
+        if (toggle) toggle.style.display = "none";
         return;
     }
 
@@ -567,6 +570,26 @@ function renderFindings(data) {
 
         })
         .join("");
+
+    // Progressive disclosure: only reveal the "show all" affordance when
+    // the findings list is actually tall enough to be clipped. Same data,
+    // just not all dumped on screen by default.
+    requestAnimationFrame(() => {
+
+        const wrap = getElement("findings-wrap");
+        const toggle = getElement("findings-toggle");
+
+        if (!wrap || !toggle) {
+            return;
+        }
+
+        wrap.classList.remove("expanded");
+        toggle.textContent = "Show all findings";
+
+        const overflowing = container.scrollHeight > 280;
+        toggle.style.display = overflowing ? "block" : "none";
+
+    });
 
 }
 
@@ -2344,6 +2367,14 @@ CASE DISPOSITION  (cyeraDispositionIntelligence)
 ====================================================
 Reads data.cyeraDispositionIntelligence and renders
 into #disposition-container / #disposition-meta.
+
+NOTE: "Notable alerts" (importantAlerts) used to be
+rendered as a subsection inside this same container.
+It is now rendered separately by renderHighRiskCases()
+into #highrisk-container, so the same data can stand on
+its own as the dashboard's "high-risk cases" section
+instead of being buried inside a tab. No data changed —
+only where it's mounted.
 */
 
 function renderDisposition(data) {
@@ -2383,11 +2414,6 @@ function renderDisposition(data) {
             ? [...intel.analystOutcomes].sort(
                 (a, b) => (b.totalHandled ?? 0) - (a.totalHandled ?? 0)
             )
-            : [];
-
-    const importantAlerts =
-        Array.isArray(intel.importantAlerts)
-            ? intel.importantAlerts
             : [];
 
     const dispositionEntries = [
@@ -2487,44 +2513,67 @@ function renderDisposition(data) {
 
         </div>
 
-
-        <!-- NOTABLE ALERTS -->
-
-        <div class="intel-subsection">
-
-            <div class="intel-subsection-title">
-                Notable alerts
-            </div>
-
-            <div class="risk-list">
-
-                ${
-                    importantAlerts.length
-                        ? importantAlerts.slice(0, 6).map((item, index) => `
-                            <div class="risk-list-row row-anim" style="${rowDelay(index, 35)}">
-                                <div class="risk-list-main">
-                                    <div class="queue-name-row">
-                                        <span class="sev-dot sev-${(item.severity || "unknown").toLowerCase()}"></span>
-                                        <span class="risk-list-name" title="${escapeHTML(item.name)}">
-                                            ${escapeHTML(item.name)}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="risk-list-count">
-                                    <span class="chip chip-status">${escapeHTML(item.status || "—")}</span>
-                                </div>
-                            </div>
-                        `).join("")
-                        : `<div class="intel-empty-inline">No notable alerts this report.</div>`
-                }
-
-            </div>
-
-        </div>
-
     `;
 
     animateFills(container);
+}
+
+
+/*
+====================================================
+HIGH-RISK CASES  (Section 6)
+====================================================
+Reuses data.cyeraDispositionIntelligence.importantAlerts
+— the same "notable alerts" list previously embedded
+inside the Case Disposition panel — and renders it into
+its own compact, dedicated section so high/critical
+cases are surfaced directly rather than buried in a tab.
+No new data or calculation, purely a presentation split.
+*/
+
+function renderHighRiskCases(data) {
+
+    const container = getElement("highrisk-container");
+
+    if (!container) {
+        return;
+    }
+
+    const intel = data?.cyeraDispositionIntelligence;
+
+    const importantAlerts =
+        Array.isArray(intel?.importantAlerts)
+            ? intel.importantAlerts
+            : [];
+
+    if (!importantAlerts.length) {
+        container.innerHTML =
+            emptyState("No high-risk alerts flagged this report.", { icon: "\u2713" });
+        return;
+    }
+
+    container.innerHTML = `
+        <div class="risk-list">
+            ${importantAlerts.slice(0, 8).map((item, index) => `
+                <div class="risk-list-row row-anim" style="${rowDelay(index, 35)}">
+                    <div class="risk-list-main">
+                        <div class="queue-name-row">
+                            <span class="sev-dot sev-${escapeHTML(String(item.severity || "unknown").toLowerCase())}"></span>
+                            <span class="risk-list-name" title="${escapeHTML(item.name)}">
+                                ${escapeHTML(item.name)}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="risk-list-count">
+                        <span class="chip chip-status">${escapeHTML(item.status || "\u2014")}</span>
+                    </div>
+                </div>
+            `).join("")}
+        </div>
+    `;
+
+    animateFills(container);
+
 }
 /*
 ====================================================
@@ -2718,6 +2767,10 @@ function showPageError(message) {
         "lifecycle-container",
         "case-outcome-container",
         "risk-acceptance-container",
+        "operational-intelligence-container",
+        "workload-container",
+        "disposition-container",
+        "highrisk-container",
         "alert-breakdown",
         "report-container"
     ];
@@ -2740,6 +2793,69 @@ function showPageError(message) {
                 </div>
             </div>
         `;
+
+    });
+
+    const toggle = getElement("findings-toggle");
+    if (toggle) toggle.style.display = "none";
+
+}
+
+
+/*
+====================================================
+CURRENT-STATE TABS
+====================================================
+Purely presentational: swaps which existing container
+(operational-intelligence / case-outcome / disposition /
+risk-acceptance) is visible inside the merged "Current
+Security State" panel. No data or render logic changes —
+all four still run and populate their containers exactly
+as before; only one is shown at a time to cut scrolling.
+*/
+
+document.querySelectorAll(".state-tab").forEach(tab => {
+
+    tab.addEventListener("click", () => {
+
+        const target = tab.getAttribute("data-tab");
+
+        document.querySelectorAll(".state-tab").forEach(t => {
+            t.classList.toggle("active", t === tab);
+        });
+
+        document.querySelectorAll(".state-tab-panel").forEach(panel => {
+            panel.classList.toggle(
+                "active",
+                panel.getAttribute("data-tab-panel") === target
+            );
+        });
+
+    });
+
+});
+
+
+/*
+====================================================
+FINDINGS SHOW ALL / SHOW LESS
+====================================================
+Purely presentational: toggles a CSS class that removes
+the max-height clamp on #insights-container. The findings
+themselves are unchanged and already fully rendered by
+renderFindings(); this just controls how much is visible
+by default.
+*/
+
+const findingsToggle = getElement("findings-toggle");
+const findingsWrap = getElement("findings-wrap");
+
+if (findingsToggle && findingsWrap) {
+
+    findingsToggle.addEventListener("click", () => {
+
+        const expanded = findingsWrap.classList.toggle("expanded");
+        findingsToggle.textContent = expanded ? "Show fewer findings" : "Show all findings";
 
     });
 
